@@ -582,32 +582,32 @@ If you discover a vulnerability, report it privately to **security@zibaxeer.io**
 ```mermaid
 gantt
     title ZibaXeer Development Roadmap
-    dateFormat YYYY-Q
-    axisFormat %Y Q%q
+    dateFormat YYYY-MM-DD
+    axisFormat %b %Y
 
     section Phase 1 - Foundation
-    Core Contracts Development     :done, p1a, 2026-Q1, 90d
-    Argus Oracle Integration       :done, p1b, 2026-Q1, 60d
-    PaxDex Router Adapter          :active, p1c, 2026-Q1, 45d
-    Testnet Deployment             :active, p1d, 2026-Q1, 30d
+    Core Contracts Development     :done, p1a, 2026-01-05, 90d
+    Argus Oracle Integration       :done, p1b, 2026-01-15, 60d
+    PaxDex Router Adapter          :active, p1c, 2026-02-01, 45d
+    Testnet Deployment             :active, p1d, 2026-03-01, 30d
 
     section Phase 2 - Launch
-    Security Audit                 : p2a, 2026-Q2, 45d
+    Security Audit                 : p2a, 2026-04-01, 45d
     Mainnet Deployment             : p2b, after p2a, 14d
-    Web Dashboard v1               : p2c, 2026-Q2, 60d
-    Colosseum Integration          : p2d, 2026-Q2, 30d
+    Web Dashboard v1               : p2c, 2026-04-01, 60d
+    Colosseum Integration          : p2d, 2026-05-15, 30d
 
     section Phase 3 - Growth
-    Multi-Strategy Vaults          : p3a, 2026-Q3, 60d
-    IBC Cross-Chain Mirroring      : p3b, 2026-Q3, 90d
-    Mobile App (React Native)      : p3c, 2026-Q3, 75d
-    Governance Token Launch        : p3d, 2026-Q3, 30d
+    Multi-Strategy Vaults          : p3a, 2026-07-01, 60d
+    IBC Cross-Chain Mirroring      : p3b, 2026-07-01, 90d
+    Mobile App - React Native      : p3c, 2026-07-15, 75d
+    Governance Token Launch        : p3d, 2026-09-01, 30d
 
     section Phase 4 - Scale
-    Institutional Vault Tiers      : p4a, 2026-Q4, 60d
-    Advanced Analytics Engine      : p4b, 2026-Q4, 45d
-    DAO Governance v2              : p4c, 2026-Q4, 45d
-    SDK and API Public Release     : p4d, 2026-Q4, 30d
+    Institutional Vault Tiers      : p4a, 2026-10-01, 60d
+    Advanced Analytics Engine      : p4b, 2026-10-15, 45d
+    DAO Governance v2              : p4c, 2026-11-01, 45d
+    SDK and API Public Release     : p4d, 2026-11-15, 30d
 ```
 
 ---
