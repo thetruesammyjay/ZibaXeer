@@ -4,9 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Logo } from "@/components/icons/logo"
 import { Button } from "@/components/ui/button"
+import { ConnectKitButton } from "connectkit"
+import { useAccount } from "wagmi"
 
 export function Header() {
     const pathname = usePathname()
+    const { isConnected } = useAccount()
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,13 +21,15 @@ export function Header() {
                         <span className="inline-block font-bold">ZibaXeer</span>
                     </Link>
                     <nav className="hidden gap-6 md:flex">
-                        <Link
-                            href="/dashboard"
-                            className={`flex items-center text-sm font-medium transition-colors hover:text-foreground ${pathname === "/dashboard" ? "text-foreground" : "text-muted-foreground"
-                                }`}
-                        >
-                            Dashboard
-                        </Link>
+                        {isConnected && (
+                            <Link
+                                href="/dashboard"
+                                className={`flex items-center text-sm font-medium transition-colors hover:text-foreground ${pathname === "/dashboard" ? "text-foreground" : "text-muted-foreground"
+                                    }`}
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                         <Link
                             href="/vaults"
                             className={`flex items-center text-sm font-medium transition-colors hover:text-foreground ${pathname === "/vaults" ? "text-foreground" : "text-muted-foreground"
@@ -37,11 +42,7 @@ export function Header() {
 
                 {/* Right Side: Wallet Config */}
                 <div className="flex items-center gap-2">
-                    {/* Placeholder for Wagmi/ConnectKit Connect Button */}
-                    <Button variant="outline" className="hidden sm:inline-flex">
-                        Connect Connect
-                    </Button>
-                    <Button>Connect Wallet</Button>
+                    <ConnectKitButton />
                 </div>
             </div>
         </header>
