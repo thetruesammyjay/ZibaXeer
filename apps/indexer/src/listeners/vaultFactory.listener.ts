@@ -1,22 +1,39 @@
-import { getVaultFactoryContract } from '../config/contracts';
+import { getVaultFactoryContract, getVaultContract } from '../config/contracts.js';
+import { vaultDeployedQueue } from '../queues/index.js';
 
 /**
  * Listen for newly deployed vault contracts
  */
 export async function listenToVaultFactory() {
     const factory = getVaultFactoryContract();
+    const factoryAddress = await factory.getAddress();
 
-    console.log(`[VaultFactoryListener] Subscribing to VaultCreated on ${await factory.getAddress()}...`);
+    console.log(`[VaultFactoryListener] Subscribing to VaultDeployed on ${factoryAddress}...`);
 
-    factory.on('VaultCreated', async (vaultAddress: string, leader: string, baseAsset: string, name: string) => {
-        console.log(`[VaultCreated] New Vault Deployed!`);
-        console.log(`  Address: ${vaultAddress}`);
-        console.log(`  Leader:  ${leader}`);
-        console.log(`  Name:    ${name}`);
-        console.log(`  Asset:   ${baseAsset}`);
+    factory.on('VaultDeployed', async (vaultAddress: string, leader: string) => {
+        try {
+            console.log(`[VaultDeployed] New Vault clone detected: ${vaultAddress}`);
 
-        // TODO: Send payload to processors to enter into database
-        // await processNewVault(vaultAddress, leader, name, baseAsset);
+            // Wait briefly to ensure RPC state is synced to the new clone before reading
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Fetch dynamically initialized variables directly from the new proxy
+            const vaultContract: any = getVaultContract(vaultAddress);
+            const baseAsset = await vaultContract.baseAsset();
+
+            console.log(`  Leader:  ${leader}`);
+            console.log(`  Asset:   ${baseAsset}`);
+
+            await vaultDeployedQueue.add('register-vault', {
+                vaultAddress,
+                leader,
+                baseAsset,
+            });
+
+            console.log(`[VaultFactoryListener] Queued database registration for ${vaultAddress}`);
+        } catch (error) {
+            console.error(`[VaultFactoryListener] Error handling event for ${vaultAddress}:`, error);
+        }
     });
 }
 

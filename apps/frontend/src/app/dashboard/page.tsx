@@ -11,10 +11,14 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAccount, useBalance } from "wagmi"
 import { formatEther } from "viem"
+import { useGlobalAnalytics } from "@/hooks/api/useAnalytics"
+import { useVaults } from "@/hooks/api/useVaults"
 
 export default function DashboardPage() {
     const { address, isConnected } = useAccount()
     const { data: balanceData } = useBalance({ address })
+    const { analytics, loading } = useGlobalAnalytics()
+    const { vaults } = useVaults()
 
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-8">
@@ -22,7 +26,7 @@ export default function DashboardPage() {
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                     <p className="text-muted-foreground">
-                        Overview of your active copy-trading vaults and risk adjusted returns.
+                        Global protocol analytics and your personal wallet state.
                     </p>
                 </div>
                 <Button>Explore New Vaults</Button>
@@ -50,43 +54,47 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Active Vaults
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">3</div>
-                        <p className="text-xs text-muted-foreground">
-                            You are copying 3 top traders
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Total PnL
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-500">+$2,450.00</div>
-                        <p className="text-xs text-muted-foreground">
-                            Across all vaults
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Risk Score (Argus)
+                            Protocol Total Value Locked
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold flex items-center gap-2">
-                            Low <Badge variant="secondary">Safe</Badge>
+                            {loading ? "..." : (analytics?.totalTvl ? `$${formatEther(BigInt(analytics.totalTvl))}` : "$0.00")}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Aggregated portfolio risk
+                            Aggregated capital across vaults
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Protocol Win Rate
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-500">
+                            {loading ? "..." : `${analytics?.winRate || 0}%`}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Across {analytics?.totalTrades || 0} executed trades
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Active Vaults
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold flex items-center gap-2">
+                            {loading ? "..." : (analytics?.activeVaultsCount || 0)} <Badge variant="secondary">Live</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Managed by Argus validated leaders
                         </p>
                     </CardContent>
                 </Card>
@@ -94,23 +102,25 @@ export default function DashboardPage() {
 
             {isConnected ? (
                 <>
-                    <h3 className="text-xl font-bold tracking-tight pt-4">Your Active Vaults</h3>
+                    <h3 className="text-xl font-bold tracking-tight pt-4">All Vaults Network</h3>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <CardTitle>Alpha ETH Trend</CardTitle>
-                                        <CardDescription>Managed by 0xSammy</CardDescription>
+                        {vaults.map((vault) => (
+                            <Card key={vault.id} className="hover:border-primary/50 transition-colors cursor-pointer">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <CardTitle>{vault.name}</CardTitle>
+                                            <CardDescription>Followers: {vault._count?.followers || 0}</CardDescription>
+                                        </div>
+                                        <Badge>{vault.roi > 0 ? '+' : ''}{vault.roi}% ROI</Badge>
                                     </div>
-                                    <Badge>+12.4% APR</Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-lg font-bold">0.00 USDL</div>
-                                <p className="text-xs text-muted-foreground">Your Deposit</p>
-                            </CardContent>
-                        </Card>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-lg font-bold">{vault.tvl === "0" ? "0.00" : formatEther(BigInt(vault.tvl))} {vault.baseAsset}</div>
+                                    <p className="text-xs text-muted-foreground">Total Vault Value</p>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
                 </>
             ) : (
