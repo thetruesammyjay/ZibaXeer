@@ -6,3 +6,75 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Represents a Web3 Wallet (Leader or Follower)
+model User {
+  id               String   @id @default(uuid())
+  walletAddress    String   @unique
+  argusScore       Int      @default(0) // Glatiator Reputation Score
+  joinedAt         DateTime @default(now())
+
+  vaultsLed        Vault[]  @relation("VaultLeader")
+  subscriptions    FollowerSubscription[]
+}
+
+// Represents an on-chain CopyTradingVault strategy
+model Vault {
+  id               String   @id @default(uuid())
+  contractAddress  String   @unique
+  leaderId         String
+  leader           User     @relation("VaultLeader", fields: [leaderId], references: [id])
+  
+  name             String
+  baseAsset        String   // e.g "USDC"
+  riskScore        Int      @default(0) // Derived from RiskManager limits
+  
+  // Performance Metrics
+  tvl              String   @default("0") // Total Value Locked (scaled string)
+  roi              Float    @default(0.0) // Return on Investment percentage
+  drawdown         Float    @default(0.0) // Max drawdown recorded
+
+  createdAt        DateTime @default(now())
+  status           VaultStatus @default(ACTIVE)
+
+  trades           Trade[]
+  followers        FollowerSubscription[]
+}
+
+// Represents a Follower subscribed to a Vault
+model FollowerSubscription {
+  id               String   @id @default(uuid())
+  vaultId          String
+  vault            Vault    @relation(fields: [vaultId], references: [id])
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+
+  depositedAmount  String   // Wallet balance deposited to the vault
+  subscribedAt     DateTime @default(now())
+
+  @@unique([vaultId, userId])
+}
+
+// Represents an executed Trade triggered by the Leader
+model Trade {
+  id               String   @id @default(uuid())
+  vaultId          String
+  vault            Vault    @relation(fields: [vaultId], references: [id])
+
+  txHash           String   @unique // On-chain transaction hash
+  assetIn          String
+  assetOut         String
+  amountIn         String
+  amountOut        String
+  
+  isProfit         Boolean
+  pnlAmount        String   // Captured Realized PnL
+
+  executedAt       DateTime @default(now())
+}
+
+enum VaultStatus {
+  ACTIVE
+  PAUSED
+  LIQUIDATED
+}
