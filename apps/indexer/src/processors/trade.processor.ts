@@ -3,43 +3,41 @@ import { TradeJobPayload } from '@zibaxeer/types';
 
 /**
  * Invoked by vault.listener.ts when a TradeExecuted event is captured.
- * Pushes the executed block data into the Backend BullMQ queues for async database writing.
+ * Maps on-chain event params to the TradeJobPayload shape and enqueues
+ * for async persistence by the backend TradeWorker.
+ *
+ * ABI: TradeExecuted(address indexed tokenIn, address indexed tokenOut, uint256 totalAmountSwapped)
  */
 export async function processTrade(
     vaultAddress: string,
-    tradeHash: string,
     tokenIn: string,
     tokenOut: string,
-    totalAmountSwapped: string,
-    isProfit: boolean,
-    pnlAmount: bigint,
+    totalAmountSwapped: bigint,
+    txHash: string,
     timestamp: number
 ) {
-    console.log(`[TradeProcessor] Queuing Trade ${tradeHash} for Vault ${vaultAddress}...`);
+    console.log(`[TradeProcessor] Queuing trade ${txHash} for Vault ${vaultAddress}...`);
 
     try {
-        // Push the core execution to the Trade Processing Queue for follower aggregations
         await tradeQueue.add('process-trade', {
-            txHash: tradeHash,
+            txHash,
             vaultAddress,
             assetIn: tokenIn,
             assetOut: tokenOut,
-            amountIn: totalAmountSwapped,
-            amountOut: "0", // Handled by backend aggregation if needed
-            isProfit,
-            pnlAmount: pnlAmount.toString(),
-            timestamp
+            amountIn: totalAmountSwapped.toString(), // Amount sold into the swap
+            amountOut: '0',                          // Not emitted — resolved by backend if needed
+            isProfit: false,                         // Determined later via ProfitSettled event
+            pnlAmount: '0',                          // Determined later via ProfitSettled event
+            timestamp,
         } as TradeJobPayload);
 
-        // Trigger a vault metrics recalculation queue job
-        await snapshotQueue.add('recalculate-snapshot', {
-            vaultAddress
-        });
+        // Trigger vault snapshot recalculation after every trade
+        await snapshotQueue.add('recalculate-snapshot', { vaultAddress });
 
-        console.log(`[TradeProcessor] Trade ${tradeHash} successfully queued.`);
+        console.log(`[TradeProcessor] Trade ${txHash} successfully queued.`);
         return true;
     } catch (err) {
-        console.error(`[TradeProcessor] Failed to queue trade ${tradeHash}:`, err);
+        console.error(`[TradeProcessor] Failed to queue trade ${txHash}:`, err);
         return false;
     }
 }

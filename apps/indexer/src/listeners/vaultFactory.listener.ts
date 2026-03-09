@@ -1,9 +1,11 @@
 import { getVaultFactoryContract, getVaultContract } from '../config/contracts.js';
 import { vaultDeployedQueue } from '../queues/index.js';
+import { listenToVault } from './vault.listener.js';
 import { VaultDeployedPayload } from '@zibaxeer/types';
 
 /**
- * Listen for newly deployed vault contracts
+ * Listen for newly deployed vault contracts emitted by VaultFactory.
+ * ABI: VaultDeployed(address indexed leader, address indexed vaultProxy)
  */
 export async function listenToVaultFactory() {
     const factory = getVaultFactoryContract();
@@ -11,34 +13,32 @@ export async function listenToVaultFactory() {
 
     console.log(`[VaultFactoryListener] Subscribing to VaultDeployed on ${factoryAddress}...`);
 
-    factory.on('VaultDeployed', async (vaultAddress: string, leader: string) => {
+    // ABI: VaultDeployed(address indexed leader, address indexed vaultProxy)
+    factory.on('VaultDeployed', async (leader: string, vaultProxy: string, event: any) => {
         try {
-            console.log(`[VaultDeployed] New Vault clone detected: ${vaultAddress}`);
+            console.log(`[VaultDeployed] New Vault: ${vaultProxy} | Leader: ${leader}`);
 
-            // Wait briefly to ensure RPC state is synced to the new clone before reading
+            // Wait briefly to ensure RPC state is synced to the new proxy
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Fetch dynamically initialized variables directly from the new proxy
-            const vaultContract: any = getVaultContract(vaultAddress);
-            const baseAsset = await vaultContract.baseAsset();
+            // Read baseAsset on-chain — not emitted in the event
+            const vaultContract = getVaultContract(vaultProxy) as any;
+            const baseAsset: string = await vaultContract.baseAsset();
 
-            console.log(`  Leader:  ${leader}`);
-            console.log(`  Asset:   ${baseAsset}`);
+            console.log(`[VaultDeployed] BaseAsset: ${baseAsset}`);
 
             await vaultDeployedQueue.add('register-vault', {
-                vaultAddress,
+                vaultAddress: vaultProxy,
                 leader,
                 baseAsset,
             } as VaultDeployedPayload);
 
-            console.log(`[VaultFactoryListener] Queued database registration for ${vaultAddress}`);
+            console.log(`[VaultFactoryListener] Queued DB registration for ${vaultProxy}`);
+
+            // Immediately start watching this vault's trades and subscriptions
+            await listenToVault(vaultProxy);
         } catch (error) {
-            console.error(`[VaultFactoryListener] Error handling event for ${vaultAddress}:`, error);
+            console.error(`[VaultFactoryListener] Error handling VaultDeployed for ${vaultProxy}:`, error);
         }
     });
-}
-
-// Ensure the listener boots if run directly
-if (require.main === module) {
-    listenToVaultFactory().catch(console.error);
 }
