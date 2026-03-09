@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import { prisma } from '@zibaxeer/db';
 
 /**
  * Retrieves the global leaderboard of Gladiators based on Argus Reputation Score

@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { TradeJobPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
-import prisma from '../lib/prisma';
+import { prisma } from '@zibaxeer/db';
 
 /**
  * Background worker that processes trade events emitted by the on-chain Indexer.

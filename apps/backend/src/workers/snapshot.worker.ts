@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { SnapshotJobPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
-import prisma from '../lib/prisma';
+import { prisma } from '@zibaxeer/db';
 
 /**
  * Background worker that recalculates TVL, Drawdown, and ROI metrics for all active

@@ -17,6 +17,9 @@ importers:
       '@prisma/client':
         specifier: ^6.4.1
         version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
+      '@zibaxeer/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@zibaxeer/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -72,6 +75,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.3)
+      '@zibaxeer/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@zibaxeer/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -194,6 +203,22 @@ importers:
         version: 10.9.2(@types/node@25.3.5)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/db:
+    dependencies:
+      '@prisma/client':
+        specifier: ^6.4.1
+        version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^25.3.5
+        version: 25.3.5
+      prisma:
+        specifier: ^6.4.1
+        version: 6.19.2(typescript@5.9.3)
+      typescript:
+        specifier: ^5.0.0
         version: 5.9.3
 
   packages/sdk:
