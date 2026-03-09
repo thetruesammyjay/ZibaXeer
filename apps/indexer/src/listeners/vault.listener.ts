@@ -1,6 +1,7 @@
 import { getVaultContract } from '../config/contracts.js';
 import { followerEventQueue } from '../queues/index.js';
 import { processTrade } from '../processors/trade.processor.js';
+import { FollowerPayload } from '@zibaxeer/types';
 
 /**
  * Dynamically listen to events for a specific vault Address
@@ -18,7 +19,7 @@ export async function listenToVault(vaultAddress: string) {
             followerAddress: follower,
             amount: amount.toString(),
             action: 'DEPOSIT'
-        });
+        } as FollowerPayload);
     });
 
     // Listen for Follower Withdrawals
@@ -29,7 +30,7 @@ export async function listenToVault(vaultAddress: string) {
             followerAddress: follower,
             amount: amount.toString(),
             action: 'WITHDRAW'
-        });
+        } as FollowerPayload);
     });
 
     vault.on('TradeExecuted', async (

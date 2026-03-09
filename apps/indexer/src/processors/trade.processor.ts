@@ -1,4 +1,5 @@
 import { tradeQueue, snapshotQueue } from '../queues/index.js';
+import { TradeJobPayload } from '@zibaxeer/types';
 
 /**
  * Invoked by vault.listener.ts when a TradeExecuted event is captured.
@@ -28,7 +29,7 @@ export async function processTrade(
             isProfit,
             pnlAmount: pnlAmount.toString(),
             timestamp
-        });
+        } as TradeJobPayload);
 
         // Trigger a vault metrics recalculation queue job
         await snapshotQueue.add('recalculate-snapshot', {

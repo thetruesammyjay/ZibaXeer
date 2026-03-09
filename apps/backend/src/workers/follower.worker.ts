@@ -1,13 +1,7 @@
 import { Worker, Job } from 'bullmq';
+import { FollowerPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
 import prisma from '../lib/prisma';
-
-interface FollowerPayload {
-    vaultAddress: string;
-    followerAddress: string;
-    amount: string; // BigInt representation locally
-    action: 'DEPOSIT' | 'WITHDRAW';
-}
 
 /**
  * BullMQ Worker handling deposit and withdrawal interactions emitted by the Contract.

@@ -1,4 +1,5 @@
 import { snapshotQueue } from '../queues/index.js';
+import { SnapshotJobPayload } from '@zibaxeer/types';
 
 /**
  * Scaffold for vault PnL recalculations.
@@ -11,7 +12,7 @@ export async function updateVaultMetrics(vaultAddress: string) {
     try {
         await snapshotQueue.add('trigger-snapshot', {
             vaultAddress
-        });
+        } as SnapshotJobPayload);
 
         console.log(`[PnLProcessor] Successfully queued metric recalculation for Vault ${vaultAddress}.`);
         return true;

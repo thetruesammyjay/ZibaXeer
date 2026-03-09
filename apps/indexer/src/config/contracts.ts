@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
-import VaultFactoryABI from '../abis/VaultFactory.json';
-import CopyTradingVaultABI from '../abis/CopyTradingVault.json';
+import { VaultFactoryABI, CopyTradingVaultABI } from '@zibaxeer/sdk';
 import dotenv from 'dotenv';
 
 dotenv.config();

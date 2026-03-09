@@ -1,13 +1,7 @@
 import { Worker, Job } from 'bullmq';
+import { SnapshotJobPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
 import prisma from '../lib/prisma';
-
-/**
- * Interface for snapshot triggers. Usually runs on a CRON schedule.
- */
-interface SnapshotJobPayload {
-    interval: string; // e.g., '1h', '24h'
-}
 
 /**
  * Background worker that recalculates TVL, Drawdown, and ROI metrics for all active

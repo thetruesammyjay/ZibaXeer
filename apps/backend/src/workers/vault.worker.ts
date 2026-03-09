@@ -1,12 +1,7 @@
 import { Worker, Job } from 'bullmq';
+import { VaultDeployedPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
 import prisma from '../lib/prisma';
-
-interface VaultDeployedPayload {
-    vaultAddress: string;
-    leader: string;
-    baseAsset: string;
-}
 
 /**
  * BullMQ Worker handling Vault deployments discovered by the Indexer's Event Listener.

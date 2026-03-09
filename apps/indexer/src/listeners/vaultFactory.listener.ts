@@ -1,5 +1,6 @@
 import { getVaultFactoryContract, getVaultContract } from '../config/contracts.js';
 import { vaultDeployedQueue } from '../queues/index.js';
+import { VaultDeployedPayload } from '@zibaxeer/types';
 
 /**
  * Listen for newly deployed vault contracts
@@ -28,7 +29,7 @@ export async function listenToVaultFactory() {
                 vaultAddress,
                 leader,
                 baseAsset,
-            });
+            } as VaultDeployedPayload);
 
             console.log(`[VaultFactoryListener] Queued database registration for ${vaultAddress}`);
         } catch (error) {

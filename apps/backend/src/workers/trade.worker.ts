@@ -1,21 +1,7 @@
 import { Worker, Job } from 'bullmq';
+import { TradeJobPayload } from '@zibaxeer/types';
 import redisConnection from '../config/redis';
 import prisma from '../lib/prisma';
-
-/**
- * Interface for the expected payload pushed into the TradeProcessingQueue.
- */
-interface TradeJobPayload {
-    txHash: string;
-    vaultAddress: string;
-    assetIn: string;
-    assetOut: string;
-    amountIn: string;
-    amountOut: string;
-    isProfit: boolean;
-    pnlAmount: string;
-    timestamp: number;
-}
 
 /**
  * Background worker that processes trade events emitted by the on-chain Indexer.
