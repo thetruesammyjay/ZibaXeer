@@ -61,17 +61,16 @@ Paxeer's funded wallet model (starting at $50,000 USDL) provides immediate liqui
 ```mermaid
 graph TB
     subgraph Clients["Client Layer"]
-        WEB[Web Dashboard]
-        SDK[ZibaXeer SDK]
-        API[REST / WebSocket API]
+        WEB[Web Dashboard<br/>React 19 / Next.js]
+        WC[ConnectKit + Wagmi<br/>Wallet Connection]
     end
 
     subgraph Protocol["ZibaXeer Protocol Layer"]
-        VF[Vault Factory]
-        VR[Vault Registry]
-        SE[Strategy Engine]
-        RM[Risk Manager]
-        RS[Revenue Splitter]
+        VF[Vault Factory<br/>UUPS Proxy]
+        VR[Vault Registry<br/>UUPS Proxy]
+        SE[Strategy Engine<br/>CopyTradingVault Proxy]
+        RM[Risk Manager<br/>UUPS Proxy]
+        RS[Revenue Splitter<br/>UUPS Proxy]
     end
 
     subgraph Execution["Execution Layer"]
@@ -86,10 +85,9 @@ graph TB
         HP[HyperPaxeer Chain<br/>EVM Chain ID 125]
     end
 
-    WEB --> API
-    SDK --> API
-    API --> VF
-    API --> VR
+    WEB --> WC
+    WC --> VF
+    WC --> VR
     VF --> SE
     SE --> RM
     RM --> AE
@@ -327,9 +325,9 @@ classDiagram
 | Component | Technology |
 |---|---|
 | Language | Solidity `^0.8.20` |
-| Framework | Hardhat / Foundry |
-| Testing | Forge (fuzz + invariant tests) |
-| Upgrades | OpenZeppelin UUPS Proxy |
+| Framework | Foundry (`forge` testing) + Custom Node.js `solc` (`compile.js`) |
+| Testing | Forge (Unit + Integration Tests against Mock Oracles) |
+| Upgrades | OpenZeppelin UUPS Proxy (`ERC1967Proxy`) |
 | Oracle | Custom Argus Oracle bridge |
 
 ### Backend
@@ -347,11 +345,10 @@ classDiagram
 
 | Component | Technology |
 |---|---|
-| Framework | Next.js 14 (App Router) |
-| Styling | Tailwind CSS + Radix UI |
-| Web3 | wagmi v2 + viem |
-| Charts | Lightweight Charts (TradingView) |
-| State | Zustand |
+| Framework | Next.js 15 (App Router, React 19) |
+| Styling | Tailwind CSS v4 + Radix UI + `next-themes` |
+| Web3 | Wagmi v2 + viem + ConnectKit |
+| State | Zustand / React Server Components |
 
 ### Infrastructure
 
@@ -453,11 +450,11 @@ NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
 ### Compile Contracts
 
 ```bash
-# Using Foundry
-forge build
+# Using custom Node compiler script (bypasses ESM issues)
+cd contracts
+node compile.js
 
-# Using Hardhat
-npx hardhat compile
+# Note: This will export directly to `out/`
 ```
 
 ### Run Local Node
