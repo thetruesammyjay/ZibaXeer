@@ -1,0 +1,95 @@
+---
+title: Network
+description: HyperPaxeer network configuration, chain details, and wallet setup
+---
+
+# Network
+
+ZibaXeer is deployed on **HyperPaxeer** — an EVM-compatible chain built on the Cosmos SDK with CometBFT consensus.
+
+---
+
+## Chain Details
+
+| Property | Value |
+|---|---|
+| Network Name | HyperPaxeer Mainnet |
+| Chain ID (EVM) | `125` |
+| Chain ID (Cosmos) | `hyperpax_125-1` |
+| Currency Symbol | `PAX` |
+| Base Denom | `ahpx` |
+| Display Denom | `hpx` |
+| Bech32 Prefix | `pax` |
+| RPC URL | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
+| Block Explorer | [paxscan.paxeer.app](https://paxscan.paxeer.app) |
+| Block Time | ~2 seconds |
+| Consensus | CometBFT (Tendermint) |
+| Finality | Instant (single-slot) |
+| Interoperability | IBC-ready |
+
+---
+
+## Add to MetaMask
+
+To interact with ZibaXeer using MetaMask or any EVM-compatible wallet:
+
+1. Open **MetaMask → Networks → Add Network**
+2. Fill in the following:
+
+| Field | Value |
+|---|---|
+| Network Name | `HyperPaxeer Mainnet` |
+| RPC URL | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
+| Chain ID | `125` |
+| Currency Symbol | `PAX` |
+| Block Explorer URL | `https://paxscan.paxeer.app` |
+
+---
+
+## Why Paxeer Network
+
+Paxeer's funded wallet model provides immediate capital liquidity for both vault leaders and followers, removing the cold-start problem that plagues most copy-trading protocols.
+
+| Feature | Benefit for ZibaXeer |
+|---|---|
+| ~2s block time | Trade events indexed in near real-time |
+| Instant finality | No reorg risk — indexer never needs to handle chain reorgs |
+| EVM-compatible | Full ethers.js / viem / Wagmi compatibility |
+| Funded wallets | Leaders and followers start with up to $50,000 USDL |
+| IBC-ready | Future cross-chain vault mirroring via IBC |
+| Colosseum integration | Leaders ranked by on-chain performance, feeding Argus Oracle |
+
+---
+
+## Argus Risk Engine
+
+The Argus Risk Engine is Paxeer's native reputation system. ZibaXeer integrates it via the `ArgusOracle` contract.
+
+- Scores are derived from **500+ on-chain signals** across a leader's trading history
+- Minimum score required to create a vault: **600 / 1000**
+- Scores are queried on-chain by `RiskManager` before every trade
+- Lower-scored leaders are blocked from executing trades — protecting follower funds
+
+```solidity
+// RiskManager.sol
+uint256 public constant MIN_REPUTATION_SCORE = 600;
+
+function validateTrade(address vaultLeader) external view returns (bool) {
+    require(!isVaultFrozen[msg.sender], "Vault is frozen");
+    bool isEligible = argusOracle.isEligible(vaultLeader, MIN_REPUTATION_SCORE);
+    require(isEligible, "Leader reputation below threshold");
+    return true;
+}
+```
+
+---
+
+## Useful Links
+
+| Resource | URL |
+|---|---|
+| HyperPaxeer RPC | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
+| Block Explorer | [paxscan.paxeer.app](https://paxscan.paxeer.app) |
+| Paxeer Network Docs | [docs.hyperpaxeer.com](https://docs.hyperpaxeer.com) |
+| Colosseum Dashboard | [colosseum.hyperpaxeer.com/dashboard](https://colosseum.hyperpaxeer.com/dashboard) |
+| Hackathon | [build.hyperpaxeer.com/hackathon](https://build.hyperpaxeer.com/hackathon) |

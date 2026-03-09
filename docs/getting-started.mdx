@@ -1,0 +1,245 @@
+---
+title: Getting Started
+description: Install ZibaXeer locally and run the full development stack
+---
+
+# Getting Started
+
+This guide walks you through cloning the repo, installing dependencies, configuring your environment, and running all three services locally.
+
+---
+
+## Prerequisites
+
+| Tool | Minimum Version | Install |
+|---|---|---|
+| Node.js | `>= 20.0.0` | [nodejs.org](https://nodejs.org) |
+| pnpm | `>= 8.0.0` | `npm i -g pnpm` |
+| Foundry | latest | [getfoundry.sh](https://getfoundry.sh) |
+| PostgreSQL | `>= 15` | [postgresql.org](https://www.postgresql.org) |
+| Redis | `>= 7` | [redis.io](https://redis.io) |
+| Git | any | [git-scm.com](https://git-scm.com) |
+
+---
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/thetruesammyjay/ZibaXeer.git
+cd ZibaXeer
+```
+
+### 2. Install all workspace dependencies
+
+```bash
+pnpm install
+```
+
+This installs dependencies for all packages: `apps/backend`, `apps/frontend`, `apps/indexer`, and all `packages/*`.
+
+---
+
+## Environment Variables
+
+### Root `.env`
+
+Create a `.env` file at the project root:
+
+```bash
+# ─── Network ──────────────────────────────────────────────
+HYPERPAXEER_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+CHAIN_ID=125
+
+# ─── Deployer ──────────────────────────────────────────────
+DEPLOYER_PRIVATE_KEY=0x...
+DEPLOYER_ADDRESS=0x...
+
+# ─── Argus Oracle ──────────────────────────────────────────
+ARGUS_ORACLE_ENDPOINT=https://api.hyperpaxeer.com/argus/v1
+ARGUS_API_KEY=your_api_key_here
+```
+
+### Backend `apps/backend/.env`
+
+```bash
+# ─── Database ──────────────────────────────────────────────
+DATABASE_URL=postgresql://postgres:password@localhost:5432/zibaxeer
+
+# ─── Redis ─────────────────────────────────────────────────
+REDIS_URL=redis://127.0.0.1:6379
+
+# ─── Server ────────────────────────────────────────────────
+PORT=4000
+```
+
+### Indexer `apps/indexer/.env`
+
+```bash
+# ─── Network ──────────────────────────────────────────────
+RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+
+# ─── Contracts ─────────────────────────────────────────────
+VAULT_FACTORY_ADDRESS=0x...
+KNOWN_VAULT_ADDRESSES=0xVault1,0xVault2   # comma-separated, optional
+
+# ─── Redis ─────────────────────────────────────────────────
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+### Frontend `apps/frontend/.env.local`
+
+```bash
+NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+NEXT_PUBLIC_CHAIN_ID=125
+NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+---
+
+## Database Setup
+
+### 1. Create the database
+
+```bash
+createdb zibaxeer
+```
+
+### 2. Generate the Prisma client
+
+```bash
+cd packages/db
+pnpm prisma generate
+```
+
+### 3. Run migrations
+
+```bash
+pnpm prisma migrate dev --name init
+```
+
+---
+
+## Running Locally
+
+Open three separate terminals:
+
+### Terminal 1 — Backend API
+
+```bash
+cd apps/backend
+pnpm dev
+```
+
+Server starts at `http://localhost:4000`. Verify with:
+
+```bash
+curl http://localhost:4000/health
+# → {"status":"ok","service":"Zibaxeer API Server"}
+```
+
+### Terminal 2 — Indexer
+
+```bash
+cd apps/indexer
+pnpm dev
+```
+
+The indexer connects to HyperPaxeer RPC, begins watching the `VaultFactory` for `VaultDeployed` events, and listens to any vaults listed in `KNOWN_VAULT_ADDRESSES`.
+
+### Terminal 3 — Frontend
+
+```bash
+cd apps/frontend
+pnpm dev
+```
+
+Dashboard available at `http://localhost:3000`.
+
+---
+
+## Smart Contract Development
+
+### Compile contracts
+
+```bash
+cd contracts
+forge build
+```
+
+### Run tests
+
+```bash
+# Unit tests
+forge test
+
+# With verbosity
+forge test -vvv
+
+# Fuzz tests (10,000 runs)
+forge test --fuzz-runs 10000
+
+# Coverage
+forge coverage --report lcov
+```
+
+### Local fork
+
+```bash
+# Fork HyperPaxeer mainnet locally on port 8545
+anvil --fork-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc --chain-id 125
+```
+
+---
+
+## Workspace Scripts
+
+From the monorepo root you can run scripts across all packages:
+
+```bash
+pnpm --filter @zibaxeer/backend dev
+pnpm --filter @zibaxeer/frontend dev
+pnpm --filter @zibaxeer/indexer dev
+```
+
+---
+
+## Troubleshooting
+
+### `pnpm install` fails on a package
+
+Make sure you're on Node.js `>= 20` and pnpm `>= 8`:
+
+```bash
+node --version
+pnpm --version
+```
+
+### Prisma client not found
+
+Regenerate the client after any schema change:
+
+```bash
+cd packages/db
+pnpm prisma generate
+```
+
+### Redis connection refused
+
+Ensure Redis is running:
+
+```bash
+# macOS / Linux
+redis-server
+
+# Windows (via WSL or Docker)
+docker run -p 6379:6379 redis:7-alpine
+```
+
+### Indexer not picking up events
+
+- Confirm `VAULT_FACTORY_ADDRESS` in `apps/indexer/.env` matches the deployed contract
+- Check the RPC endpoint is reachable
+- Verify `REDIS_URL` matches the backend's `REDIS_URL` (same Redis instance)

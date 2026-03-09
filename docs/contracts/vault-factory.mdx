@@ -1,0 +1,131 @@
+---
+title: VaultFactory
+description: Deploys and registers CopyTradingVault proxies on HyperPaxeer
+---
+
+# VaultFactory
+
+**File:** `contracts/src/core/VaultFactory.sol`  
+**Pattern:** UUPS Upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+The `VaultFactory` is the entry point for vault creation. Any eligible leader calls `createVault()`, which validates their Argus reputation score, deploys a new `ERC1967Proxy` pointing to the `CopyTradingVault` implementation, registers it in the `VaultRegistry`, and emits `VaultDeployed`.
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `vaultImplementation` | `address` | Active implementation contract for new proxies |
+| `registry` | `VaultRegistry` | Central vault directory |
+| `riskManager` | `RiskManager` | Reputation gate for vault creation |
+
+---
+
+## Events
+
+### `VaultDeployed`
+
+```solidity
+event VaultDeployed(address indexed leader, address indexed vaultProxy);
+```
+
+Emitted when a new vault proxy is successfully deployed. The indexer listens for this event to register vaults in PostgreSQL.
+
+---
+
+## Functions
+
+### `initialize`
+
+```solidity
+function initialize(
+    address initialOwner,
+    address _vaultImplementation,
+    address _registry,
+    address _riskManager
+) initializer public
+```
+
+Called once via the proxy constructor. Sets ownership and wires all dependencies.
+
+---
+
+### `createVault`
+
+```solidity
+function createVault(
+    string memory vaultName,
+    address assetToken,
+    address dexAdapter,
+    address revenueSplitter
+) external returns (address)
+```
+
+**Access:** Any caller (enforced eligibility via `RiskManager`)
+
+1. Calls `riskManager.validateTrade(msg.sender)` — reverts if Argus score < 600
+2. Encodes `CopyTradingVault.initialize(...)` calldata
+3. Deploys `ERC1967Proxy` with the implementation and calldata
+4. Calls `registry.registerVault(msg.sender, vaultAddress)`
+5. Emits `VaultDeployed(msg.sender, vaultAddress)`
+6. Returns the new vault proxy address
+
+```solidity
+// Usage example
+address newVault = vaultFactory.createVault(
+    "Alpha Scalper",
+    USDC_ADDRESS,
+    paxDexAdapter,
+    revenueSplitter
+);
+```
+
+---
+
+### `setVaultImplementation`
+
+```solidity
+function setVaultImplementation(address _impl) external onlyOwner
+```
+
+Updates the implementation contract used for future vault deployments. Does not affect existing vault proxies.
+
+---
+
+### `setDependencies`
+
+```solidity
+function setDependencies(address _registry, address _riskManager) external onlyOwner
+```
+
+Updates the `VaultRegistry` and `RiskManager` references.
+
+---
+
+## Indexer Integration
+
+The indexer's `vaultFactory.listener.ts` watches for `VaultDeployed` and triggers:
+
+1. On-chain reads: `vaultContract.vaultName()` + `vaultContract.baseAsset()`
+2. Pushes a `VaultDeployedPayload` to `VaultDeployedQueue`
+3. Starts listening to the new vault's events immediately
+
+```typescript
+factory.on('VaultDeployed', async (leader, vaultProxy, event) => {
+    const vaultContract = getVaultContract(vaultProxy);
+    const [name, baseAsset] = await Promise.all([
+        vaultContract.vaultName(),
+        vaultContract.baseAsset(),
+    ]);
+    await vaultDeployedQueue.add('vault-deployed', {
+        vaultAddress: vaultProxy,
+        leader,
+        name,
+        baseAsset,
+        txHash: event.log.transactionHash,
+    });
+    listenToVault(vaultProxy);
+});
+```

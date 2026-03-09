@@ -1,0 +1,77 @@
+---
+title: Contracts Overview
+description: All ZibaXeer smart contracts at a glance
+---
+
+# Smart Contracts Overview
+
+All ZibaXeer contracts are written in Solidity `^0.8.20` and deployed on **HyperPaxeer** (Chain ID `125`). Every core contract uses the **OpenZeppelin UUPS Proxy** pattern — upgradeable via governance with no storage collisions.
+
+---
+
+## Contract Registry
+
+| Contract | File | Upgradeable | Description |
+|---|---|---|---|
+| `VaultFactory` | `src/core/VaultFactory.sol` | ✅ UUPS | Deploys and registers new `CopyTradingVault` proxies |
+| `CopyTradingVault` | `src/core/CopyTradingVault.sol` | ✅ UUPS | Core vault — trade execution, follower management, PnL settlement |
+| `VaultRegistry` | `src/core/VaultRegistry.sol` | ✅ UUPS | Central on-chain directory of all deployed vaults |
+| `RiskManager` | `src/gov/RiskManager.sol` | ✅ UUPS | Enforces protocol risk constraints via Argus Oracle |
+| `RevenueSplitter` | `src/gov/RevenueSplitter.sol` | ✅ UUPS | Calculates and distributes realized PnL between parties |
+| `ArgusOracle` | `src/oracle/ArgusOracle.sol` | ✅ UUPS | On-chain bridge to the Argus reputation scoring engine |
+| `PaxDexAdapter` | `src/adapters/PaxDexAdapter.sol` | ❌ | Abstracts swap routing through PaxDex Router |
+| `ZibaXeerToken` | `src/core/ZibaXeerToken.sol` | ❌ | Protocol governance and utility token |
+
+---
+
+## Upgrade Pattern
+
+All upgradeable contracts follow the UUPS pattern from OpenZeppelin:
+
+```solidity
+// All core contracts inherit this pattern
+contract VaultFactory is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers(); // Prevents direct implementation initialization
+    }
+
+    function initialize(address initialOwner, ...) initializer public {
+        __Ownable_init(initialOwner);
+        // ...
+    }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal onlyOwner override {}
+}
+```
+
+The `ERC1967Proxy` is used for all proxy deployments. The implementation address is stored in the standard EIP-1967 slot.
+
+---
+
+## Protocol Dependency Order
+
+Deploy contracts in this order to satisfy constructor dependencies:
+
+```
+1. ArgusOracle
+2. RiskManager        (needs ArgusOracle)
+3. VaultRegistry
+4. RevenueSplitter
+5. PaxDexAdapter      (needs PaxDex Router address)
+6. CopyTradingVault   (implementation only — no init)
+7. VaultFactory       (needs VaultRegistry, RiskManager, CopyTradingVault impl)
+```
+
+---
+
+## Detailed Documentation
+
+- [VaultFactory](./vault-factory) — Creating vaults, eligibility checks
+- [CopyTradingVault](./copy-trading-vault) — Trade execution, subscriptions, PnL
+- [RiskManager](./risk-manager) — Circuit breakers, Argus integration
+- [RevenueSplitter](./revenue-splitter) — Profit splits, configurable BPS
+- [VaultRegistry](./vault-registry) — On-chain vault directory
+- [PaxDexAdapter](./paxdex-adapter) — DEX swap abstraction

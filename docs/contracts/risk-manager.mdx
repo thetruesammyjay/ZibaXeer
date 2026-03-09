@@ -1,0 +1,110 @@
+---
+title: RiskManager
+description: Enforces protocol risk parameters and integrates Argus Oracle for reputation gating
+---
+
+# RiskManager
+
+**File:** `contracts/src/gov/RiskManager.sol`  
+**Pattern:** UUPS Upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+The `RiskManager` is the protocol's safety layer. It is called by `CopyTradingVault` before every trade and by `VaultFactory` before every vault deployment. It queries the `ArgusOracle` for leader reputation and checks whether the vault has been frozen by an admin.
+
+---
+
+## Constants
+
+| Constant | Value | Description |
+|---|---|---|
+| `MAX_SLIPPAGE_BPS` | `500` | 5% maximum slippage tolerance |
+| `MIN_REPUTATION_SCORE` | `600` | Minimum Argus score to execute trades or create vaults |
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `argusOracle` | `ArgusOracle` | On-chain Argus reputation bridge |
+| `isVaultFrozen` | `mapping(address => bool)` | Per-vault emergency freeze state |
+
+---
+
+## Events
+
+### `VaultFrozen`
+
+```solidity
+event VaultFrozen(address indexed vault, string reason);
+```
+
+### `OracleUpdated`
+
+```solidity
+event OracleUpdated(address indexed newOracle);
+```
+
+---
+
+## Functions
+
+### `validateTrade`
+
+```solidity
+function validateTrade(address vaultLeader) external view returns (bool)
+```
+
+The primary guard called by both `VaultFactory.createVault()` and `CopyTradingVault.executeGroupTrade()`.
+
+Validation logic:
+1. `require(!isVaultFrozen[msg.sender])` — rejects if the calling vault is frozen
+2. `require(argusOracle.isEligible(vaultLeader, MIN_REPUTATION_SCORE))` — rejects if leader score < 600
+
+```solidity
+function validateTrade(address vaultLeader) external view returns (bool) {
+    require(!isVaultFrozen[msg.sender], "Vault is frozen");
+    bool isEligible = argusOracle.isEligible(vaultLeader, MIN_REPUTATION_SCORE);
+    require(isEligible, "Leader reputation below threshold");
+    return true;
+}
+```
+
+---
+
+### `triggerCircuitBreaker`
+
+```solidity
+function triggerCircuitBreaker(address vault, string calldata reason) external onlyOwner
+```
+
+**Access:** Protocol admin only
+
+Freezes a vault immediately. Once frozen, all trades from that vault revert at the `validateTrade` check. Emits `VaultFrozen(vault, reason)`.
+
+Use cases:
+- Vault drawdown exceeds safety threshold
+- Suspicious trading pattern detected
+- Leader account compromised
+
+---
+
+### `setArgusOracle`
+
+```solidity
+function setArgusOracle(address _argusOracle) external onlyOwner
+```
+
+Updates the `ArgusOracle` address. Emits `OracleUpdated`.
+
+---
+
+## Argus Oracle Integration
+
+The `ArgusOracle` is queried via:
+
+```solidity
+argusOracle.isEligible(address vaultLeader, uint256 minScore) returns (bool)
+```
+
+The Argus engine scores leaders across 500+ on-chain behavioral signals — trade frequency, win rate, drawdown history, strategy consistency, and social signals from the Paxeer Colosseum. A score of `600/1000` is the minimum threshold for protocol participation.

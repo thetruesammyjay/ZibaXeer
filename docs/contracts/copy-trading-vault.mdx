@@ -1,0 +1,166 @@
+---
+title: CopyTradingVault
+description: Core vault contract — trade execution, follower management, and PnL settlement
+---
+
+# CopyTradingVault
+
+**File:** `contracts/src/core/CopyTradingVault.sol`  
+**Pattern:** UUPS Upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+This is the heart of the protocol. Each vault is an independent `ERC1967Proxy` pointing at a shared `CopyTradingVault` implementation. It manages a pool of follower funds, routes trades through `PaxDexAdapter`, enforces risk constraints via `RiskManager`, and settles profits through `RevenueSplitter`.
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `leader` | `address` | Wallet that owns and controls this vault |
+| `vaultName` | `string` | Human-readable vault name |
+| `baseAsset` | `address` | ERC-20 token all followers deposit (e.g. USDC, PAX) |
+| `riskManager` | `RiskManager` | Risk validation contract |
+| `dexAdapter` | `PaxDexAdapter` | Swap routing adapter |
+| `revenueSplitter` | `RevenueSplitter` | Profit distribution contract |
+| `followers` | `mapping(address => FollowerData)` | Per-follower deposit and high water mark |
+| `totalVaultTVL` | `uint256` | Sum of all follower deposits |
+
+### `FollowerData` Struct
+
+```solidity
+struct FollowerData {
+    uint256 deposited;   // Amount follower has deposited in baseAsset
+    uint256 waterMark;   // High water mark for PnL calculation
+}
+```
+
+---
+
+## Events
+
+### `TradeExecuted`
+
+```solidity
+event TradeExecuted(
+    address indexed tokenIn,
+    address indexed tokenOut,
+    uint256 totalAmountSwapped
+);
+```
+
+Emitted every time the leader executes a group trade. The indexer captures this to record the trade in PostgreSQL.
+
+> ⚠️ **Note:** This event does **not** contain `isProfit` or `pnlAmount`. Those are derived separately via `ProfitSettled`.
+
+### `FollowerSubscribed`
+
+```solidity
+event FollowerSubscribed(address indexed follower, uint256 amount);
+```
+
+### `FollowerUnsubscribed`
+
+```solidity
+event FollowerUnsubscribed(address indexed follower, uint256 amount);
+```
+
+### `ProfitSettled`
+
+```solidity
+event ProfitSettled(address indexed follower, uint256 profitGenerated);
+```
+
+---
+
+## Functions
+
+### `initialize`
+
+```solidity
+function initialize(
+    address _leader,
+    string memory _vaultName,
+    address _baseAsset,
+    address _riskManager,
+    address _dexAdapter,
+    address _revenueSplitter
+) initializer public
+```
+
+Called by `VaultFactory` at proxy deployment time. Sets the vault owner (`_leader`) and wires all dependencies.
+
+---
+
+### `subscribe`
+
+```solidity
+function subscribe(uint256 amount) external
+```
+
+Followers deposit `amount` of `baseAsset` into the vault. Transfers tokens from the follower to the vault contract, increments `deposited` and `waterMark`, adds to `totalVaultTVL`, emits `FollowerSubscribed`.
+
+```solidity
+IERC20(baseAsset).safeTransferFrom(msg.sender, address(this), amount);
+followers[msg.sender].deposited += amount;
+followers[msg.sender].waterMark += amount;
+totalVaultTVL += amount;
+emit FollowerSubscribed(msg.sender, amount);
+```
+
+---
+
+### `unsubscribe`
+
+```solidity
+function unsubscribe(uint256 amount) external
+```
+
+Followers withdraw `amount`. Calls `settleFollowerProfit(msg.sender)` first to clear any outstanding PnL, then reduces `deposited`, adjusts `waterMark`, and returns tokens.
+
+---
+
+### `executeGroupTrade`
+
+```solidity
+function executeGroupTrade(
+    address tokenIn,
+    address tokenOut,
+    uint256 amountIn,
+    uint256 amountOutMinimum
+) external onlyOwner
+```
+
+**Access:** `leader` only (via `onlyOwner`)
+
+1. Calls `riskManager.validateTrade(leader)` — reverts if vault is frozen or score is below threshold
+2. Approves `dexAdapter` to spend `amountIn` of `tokenIn`
+3. Calls `dexAdapter.swap(tokenIn, tokenOut, amountIn, amountOutMinimum)`
+4. Asserts `amountReceived >= amountOutMinimum` (slippage guard)
+5. Emits `TradeExecuted(tokenIn, tokenOut, amountIn)`
+
+---
+
+### `settleFollowerProfit`
+
+```solidity
+function settleFollowerProfit(address follower) public
+```
+
+Calculates current share value against the high water mark. If profitable:
+
+1. Calculates `realizedProfit = currentShareValue - waterMark`
+2. Approves `revenueSplitter` to pull the profit
+3. Calls `revenueSplitter.splitProfit(baseAsset, realizedProfit, leader)` to distribute leader and protocol cuts
+4. Transfers the remaining amount to the follower
+5. Resets `waterMark`
+6. Emits `ProfitSettled(follower, realizedProfit)`
+
+---
+
+## Security Notes
+
+- `executeGroupTrade` is `onlyOwner` — only the vault leader can initiate trades
+- The `RiskManager` acts as a second gate: even the leader cannot trade if their Argus score drops below 600 or if the vault is frozen by the protocol
+- `settleFollowerProfit` is called automatically before any withdrawal via `unsubscribe`, ensuring followers can never withdraw without settling outstanding PnL first
+- Uses `SafeERC20` for all token transfers

@@ -1,0 +1,87 @@
+---
+title: PaxDexAdapter
+description: Swap routing adapter abstracting PaxDex interactions for CopyTradingVault
+---
+
+# PaxDexAdapter
+
+**File:** `contracts/src/adapters/PaxDexAdapter.sol`  
+**Pattern:** Non-upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+The `PaxDexAdapter` is the swap execution layer. It provides a clean `swap()` interface that `CopyTradingVault` calls — abstracting away the specifics of the PaxDex Router's `exactInputSingle` API. This design allows the swap routing logic to be upgraded without touching vault logic.
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `paxDexRouter` | `address` | Address of the PaxDex V3-style router |
+
+---
+
+## Interface
+
+The adapter targets a Uniswap V3-style `exactInputSingle` interface:
+
+```solidity
+interface IPaxDexRouter {
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
+
+    function exactInputSingle(
+        ExactInputSingleParams calldata params
+    ) external payable returns (uint256 amountOut);
+}
+```
+
+---
+
+## Functions
+
+### `swap`
+
+```solidity
+function swap(
+    address tokenIn,
+    address tokenOut,
+    uint256 amountIn,
+    uint256 amountOutMinimum
+) external returns (uint256 amountOut)
+```
+
+Called by `CopyTradingVault.executeGroupTrade()` after the vault approves this contract to spend `amountIn`.
+
+Builds the `ExactInputSingleParams` struct and calls `paxDexRouter.exactInputSingle(...)`. Returns the received output amount.
+
+---
+
+### `setPaxDexRouter`
+
+```solidity
+function setPaxDexRouter(address _paxDexRouter) external onlyOwner
+```
+
+Updates the router address — useful if PaxDex deploys a new router version.
+
+---
+
+## Integration with CopyTradingVault
+
+```solidity
+// Inside CopyTradingVault.executeGroupTrade()
+IERC20(tokenIn).safeIncreaseAllowance(address(dexAdapter), amountIn);
+uint256 amountReceived = dexAdapter.swap(tokenIn, tokenOut, amountIn, amountOutMinimum);
+require(amountReceived >= amountOutMinimum, "Slippage exceeded");
+emit TradeExecuted(tokenIn, tokenOut, amountIn);
+```
+
+The adapter acts as a trusted, stateless bridge — the vault never interacts with PaxDex directly, making future router migrations a single admin call.

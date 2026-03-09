@@ -1,0 +1,89 @@
+---
+title: VaultRegistry
+description: On-chain central directory of all officially deployed ZibaXeer vaults
+---
+
+# VaultRegistry
+
+**File:** `contracts/src/core/VaultRegistry.sol`  
+**Pattern:** UUPS Upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+The `VaultRegistry` is the on-chain source of truth for all vaults deployed through the protocol. Only the authorized `VaultFactory` can write to it. Anyone can read from it to verify whether a given address is a legitimate ZibaXeer vault.
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `isRegisteredVault` | `mapping(address => bool)` | Whether an address is a registered vault |
+| `leaderToVaults` | `mapping(address => address[])` | All vault addresses a leader manages |
+| `authorizedFactory` | `address` | The only address allowed to call `registerVault` |
+
+---
+
+## Events
+
+### `VaultRegistered`
+
+```solidity
+event VaultRegistered(address indexed leader, address indexed vault);
+```
+
+### `FactoryUpdated`
+
+```solidity
+event FactoryUpdated(address indexed oldFactory, address indexed newFactory);
+```
+
+---
+
+## Functions
+
+### `registerVault`
+
+```solidity
+function registerVault(address leader, address vault) external onlyFactory
+```
+
+**Access:** `authorizedFactory` only
+
+Called automatically by `VaultFactory.createVault()` after proxy deployment. Marks the vault as registered and appends it to the leader's vault list.
+
+---
+
+### `setAuthorizedFactory`
+
+```solidity
+function setAuthorizedFactory(address _factory) external onlyOwner
+```
+
+Updates the factory address. Emits `FactoryUpdated`.
+
+---
+
+## Read Access
+
+```solidity
+// Check if an address is a legitimate ZibaXeer vault
+bool isLegit = registry.isRegisteredVault(0xVaultAddress);
+
+// Get all vaults a leader manages
+address[] memory vaults = registry.leaderToVaults(0xLeaderAddress);
+```
+
+---
+
+## Security
+
+The `onlyFactory` modifier prevents any external actor from registering arbitrary addresses as vaults:
+
+```solidity
+modifier onlyFactory() {
+    require(msg.sender == authorizedFactory, "Caller is not the authorized Factory");
+    _;
+}
+```
+
+The `authorizedFactory` can only be changed by the contract owner (protocol DAO/multi-sig).

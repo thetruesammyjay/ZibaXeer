@@ -1,0 +1,109 @@
+---
+title: ZibaXeer
+description: On-Chain Copy-Trading Vault Protocol on HyperPaxeer
+---
+
+# ZibaXeer
+
+**On-Chain Copy-Trading Vault — Social Trading Protocol on Paxeer Network**
+
+ZibaXeer is a decentralized copy-trading vault protocol deployed on **HyperPaxeer** (EVM Chain ID `125`). It enables top-performing Colosseum traders to create strategy vaults that other funded wallets can mirror — transparently, non-custodially, and with configurable risk parameters.
+
+> Built natively on PaxDex. Powered by the Argus Risk Engine. Designed for the capital layer of Web3.
+
+---
+
+## The Problem
+
+The DeFi copy-trading landscape suffers from three fundamental problems:
+
+| Problem | Description |
+|---|---|
+| **Opacity** | Followers cannot verify strategy execution on-chain |
+| **Custody Risk** | Platforms hold user funds, introducing counterparty risk |
+| **Misaligned Incentives** | Managers profit regardless of follower performance |
+
+ZibaXeer eliminates all three.
+
+---
+
+## How It Works
+
+Every trade a vault leader executes is recorded on-chain. Followers retain full custody of their funded wallets. Revenue sharing only triggers on **realized profit** — aligning leader and follower incentives by design.
+
+```
+Leader executes trade on-chain
+        ↓
+CopyTradingVault mirrors trade proportionally for all followers
+        ↓
+RiskManager validates against Argus score + circuit breaker limits
+        ↓
+PaxDex routes the swap for each follower wallet
+        ↓
+On profitable close: RevenueSplitter distributes PnL
+        ↓
+Indexer emits events → Backend records history → Dashboard updates
+```
+
+---
+
+## Key Features
+
+### Vault System
+- Leaders create strategy vaults with custom parameters
+- Multi-strategy support: spot, perps, yield, and cross-protocol
+- Every vault trade is on-chain and queryable via PaxScan
+
+### Risk Management
+- Argus reputation scores enforce leader eligibility
+- Configurable max drawdown and circuit breakers
+- Per-trade size limits enforced at the contract level
+
+### Performance Analytics
+- Real-time ROI, win rate, Sharpe ratio, and drawdown metrics
+- Global leaderboard ranked by Argus reputation score
+- Per-vault trade history via the REST API
+
+### Revenue Sharing
+- Performance-only fees — leaders earn only on **realized profit**
+- Zero management fees; incentives fully aligned
+- Automated on-chain profit splits via `RevenueSplitter`
+
+---
+
+## Documentation
+
+| Section | Description |
+|---|---|
+| [Architecture](./architecture) | System diagrams and full data flow |
+| [Getting Started](./getting-started) | Installation, environment, and running locally |
+| [Network](./network) | HyperPaxeer chain configuration |
+| [Contracts — Overview](./contracts/overview) | All smart contracts at a glance |
+| [Backend — API Reference](./backend/api-reference) | REST endpoints and response shapes |
+| [Indexer](./indexer) | On-chain event indexer pipeline |
+| [Deployment](./deployment) | Deploy contracts, backend, and frontend |
+
+---
+
+## Tech Stack at a Glance
+
+| Layer | Technology |
+|---|---|
+| Smart Contracts | Solidity `^0.8.20`, Foundry, OpenZeppelin UUPS |
+| Chain | HyperPaxeer (EVM Chain ID `125`) |
+| Indexer | ethers.js v6, BullMQ, ioredis |
+| Backend | Node.js 20, Express.js, Prisma, PostgreSQL |
+| Frontend | Next.js 15, React 19, Wagmi v2, ConnectKit |
+| Infrastructure | Redis, BullMQ queues, Vercel, Railway |
+
+---
+
+## Links
+
+| Resource | URL |
+|---|---|
+| Block Explorer | [paxscan.paxeer.app](https://paxscan.paxeer.app) |
+| Paxeer Network | [hyperpaxeer.com](https://hyperpaxeer.com) |
+| Colosseum | [colosseum.hyperpaxeer.com/dashboard](https://colosseum.hyperpaxeer.com/dashboard) |
+| Hackathon | [build.hyperpaxeer.com/hackathon](https://build.hyperpaxeer.com/hackathon) |
+| GitHub | [github.com/thetruesammyjay/ZibaXeer](https://github.com/thetruesammyjay/ZibaXeer) |

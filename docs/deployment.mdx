@@ -1,0 +1,184 @@
+---
+title: Deployment
+description: Deploy ZibaXeer contracts to HyperPaxeer, and ship the backend and frontend
+---
+
+# Deployment
+
+This guide covers deploying all three layers of ZibaXeer: smart contracts to HyperPaxeer, the backend API to Railway, and the frontend to Vercel.
+
+---
+
+## Smart Contracts
+
+### Prerequisites
+
+- Foundry installed (`forge`, `cast`, `anvil`)
+- A funded deployer wallet on HyperPaxeer
+- `DEPLOYER_PRIVATE_KEY` set in your environment
+
+### Deploy to HyperPaxeer Mainnet
+
+```bash
+cd contracts
+
+# Deploy all contracts via the deployment script
+forge script script/Deploy.s.sol \
+  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --private-key $DEPLOYER_PRIVATE_KEY \
+  --broadcast \
+  --verify
+```
+
+### Verify on PaxScan
+
+```bash
+forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
+  --chain-id 125 \
+  --etherscan-api-key $PAXSCAN_API_KEY \
+  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+```
+
+### Deployment Order
+
+Deploy contracts in this order to satisfy dependencies:
+
+```
+1. ArgusOracle
+2. RiskManager        --constructor ArgusOracle
+3. VaultRegistry
+4. RevenueSplitter    --constructor treasury, leaderShareBps, protocolFeeBps
+5. PaxDexAdapter      --constructor paxDexRouter
+6. CopyTradingVault   (implementation only, no init)
+7. VaultFactory       --constructor VaultRegistry, RiskManager, CopyTradingVault impl
+```
+
+After deployment:
+- Call `VaultRegistry.setAuthorizedFactory(VaultFactory address)`
+- Call `VaultFactory.initialize(owner, implAddress, registryAddress, riskManagerAddress)`
+
+### Post-Deploy Configuration
+
+```bash
+# Set the authorized factory on the registry
+cast send $VAULT_REGISTRY_ADDRESS "setAuthorizedFactory(address)" $VAULT_FACTORY_ADDRESS \
+  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --private-key $DEPLOYER_PRIVATE_KEY
+```
+
+---
+
+## Backend
+
+### Railway
+
+1. Connect your GitHub repository to [Railway](https://railway.app)
+2. Create a new project → Deploy from GitHub
+3. Select `apps/backend` as the root directory
+4. Set environment variables:
+
+```bash
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+PORT=4000
+```
+
+5. Railway auto-detects Node.js and runs `pnpm start`
+
+### Database Migration (Production)
+
+```bash
+cd packages/db
+DATABASE_URL=postgresql://... pnpm prisma migrate deploy
+```
+
+### Docker (Alternative)
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY . .
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+CMD ["pnpm", "--filter", "@zibaxeer/backend", "start"]
+```
+
+---
+
+## Indexer
+
+The indexer is a long-running process. Deploy it alongside the backend:
+
+```bash
+# On your server or Railway service
+cd apps/indexer
+pnpm start
+```
+
+Required environment variables:
+
+```bash
+RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+VAULT_FACTORY_ADDRESS=0x...      # Deployed VaultFactory address
+KNOWN_VAULT_ADDRESSES=0x...,...  # Any vaults deployed before this indexer run
+REDIS_URL=redis://...            # Same Redis as backend
+```
+
+---
+
+## Frontend
+
+### Vercel
+
+```bash
+cd apps/frontend
+vercel deploy --prod
+```
+
+Or connect via the Vercel dashboard → Import Git Repository → set root directory to `apps/frontend`.
+
+Set environment variables in the Vercel dashboard:
+
+```bash
+NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+NEXT_PUBLIC_CHAIN_ID=125
+NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
+NEXT_PUBLIC_API_URL=https://api.zibaxeer.io
+```
+
+---
+
+## Infrastructure Checklist
+
+Before going live, verify:
+
+- [ ] All contracts deployed and verified on PaxScan
+- [ ] `VaultRegistry.authorizedFactory` set to `VaultFactory` address
+- [ ] `ArgusOracle` pointing to live Paxeer Argus endpoint
+- [ ] PostgreSQL database migrated with latest schema
+- [ ] Redis instance running and accessible to both backend and indexer
+- [ ] `VAULT_FACTORY_ADDRESS` set in indexer environment
+- [ ] Backend `/health` returns `200 OK`
+- [ ] Frontend `NEXT_PUBLIC_API_URL` pointing to live backend
+- [ ] CORS configured in backend to allow frontend domain
+
+---
+
+## Upgrading Contracts
+
+All core contracts use UUPS — upgrades go through a governance tx:
+
+```bash
+# Deploy new implementation
+forge script script/Upgrade.s.sol \
+  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --broadcast
+
+# Call upgradeToAndCall on the proxy
+cast send $PROXY_ADDRESS "upgradeToAndCall(address,bytes)" \
+  $NEW_IMPLEMENTATION_ADDRESS \
+  0x \
+  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --private-key $DEPLOYER_PRIVATE_KEY
+```
+
+> ⚠️ Production upgrades should go through a **multi-sig** (e.g. Gnosis Safe) — never upgrade directly from a single EOA.

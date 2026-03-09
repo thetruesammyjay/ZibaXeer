@@ -1,0 +1,107 @@
+---
+title: RevenueSplitter
+description: Calculates and distributes realized PnL between followers, leaders, and the protocol treasury
+---
+
+# RevenueSplitter
+
+**File:** `contracts/src/gov/RevenueSplitter.sol`  
+**Pattern:** UUPS Upgradeable  
+**Inherits:** `Initializable`, `OwnableUpgradeable`, `UUPSUpgradeable`
+
+The `RevenueSplitter` is called by `CopyTradingVault.settleFollowerProfit()` whenever realized profit needs to be distributed. It calculates and transfers the leader's cut and the protocol fee, then returns the remaining amount to the vault for follower payout.
+
+---
+
+## State Variables
+
+| Variable | Type | Description |
+|---|---|---|
+| `protocolTreasury` | `address` | Destination for protocol fee cuts |
+| `leaderShareBps` | `uint256` | Leader's share in basis points (e.g. `1500` = 15%) |
+| `protocolFeeBps` | `uint256` | Protocol fee in basis points (e.g. `300` = 3%) |
+
+**Constraint:** `leaderShareBps + protocolFeeBps <= 10000` (100%)
+
+---
+
+## Events
+
+### `ProfitSplit`
+
+```solidity
+event ProfitSplit(
+    address indexed vault,
+    address indexed token,
+    uint256 totalProfit,
+    uint256 leaderCut,
+    uint256 protocolCut,
+    uint256 followerRemaining
+);
+```
+
+---
+
+## Functions
+
+### `initialize`
+
+```solidity
+function initialize(
+    address initialOwner,
+    address _treasury,
+    uint256 _leaderShare,
+    uint256 _protocolFee
+) initializer public
+```
+
+| Parameter | Example Value |
+|---|---|
+| `_treasury` | DAO multi-sig address |
+| `_leaderShare` | `1500` (15%) |
+| `_protocolFee` | `300` (3%) |
+
+---
+
+### `splitProfit`
+
+```solidity
+function splitProfit(
+    address token,
+    uint256 totalProfit,
+    address leaderAddress
+) external returns (uint256 followerRemaining)
+```
+
+Called by `CopyTradingVault` after approving the splitter to spend `totalProfit` of `token`.
+
+Calculation:
+
+$$\text{leaderCut} = \frac{\text{totalProfit} \times \text{leaderShareBps}}{10000}$$
+
+$$\text{protocolCut} = \frac{\text{totalProfit} \times \text{protocolFeeBps}}{10000}$$
+
+$$\text{followerRemaining} = \text{totalProfit} - \text{leaderCut} - \text{protocolCut}$$
+
+The function:
+1. Transfers `leaderCut` to `leaderAddress`
+2. Transfers `protocolCut` to `protocolTreasury`
+3. Returns `followerRemaining` — the vault then sends this directly to the follower
+
+---
+
+## Example Split
+
+With `leaderShareBps = 1500` and `protocolFeeBps = 300`, on a `1000 USDC` realized profit:
+
+| Recipient | Amount | % |
+|---|---|---|
+| Leader | 150 USDC | 15% |
+| Protocol Treasury | 30 USDC | 3% |
+| Follower | 820 USDC | 82% |
+
+---
+
+## Zero Management Fees
+
+`RevenueSplitter` only processes **realized profit**. There are no recurring management fees. If a vault performs poorly, neither the leader nor the protocol collects anything — fully aligning incentives.

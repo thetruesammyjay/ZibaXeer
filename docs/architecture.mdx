@@ -1,0 +1,281 @@
+---
+title: Architecture
+description: ZibaXeer system architecture, component relationships, and data flow
+---
+
+# Architecture
+
+ZibaXeer is a full-stack on-chain protocol. This page covers how every layer connects — from the smart contracts on HyperPaxeer through the off-chain indexer and backend, to the React dashboard.
+
+---
+
+## System Overview
+
+```mermaid
+graph TB
+    subgraph Clients["Client Layer"]
+        WEB[Web Dashboard<br/>Next.js 15 / React 19]
+        WC[ConnectKit + Wagmi v2<br/>Wallet Connection]
+    end
+
+    subgraph Protocol["ZibaXeer Protocol Layer (HyperPaxeer)"]
+        VF[VaultFactory<br/>UUPS Proxy]
+        VR[VaultRegistry<br/>UUPS Proxy]
+        SE[CopyTradingVault<br/>UUPS Proxy]
+        RM[RiskManager<br/>UUPS Proxy]
+        RS[RevenueSplitter<br/>UUPS Proxy]
+        AO[ArgusOracle<br/>UUPS Proxy]
+    end
+
+    subgraph Execution["Execution Layer"]
+        PD[PaxDex Router]
+        PA[PaxDexAdapter]
+    end
+
+    subgraph Infra["Off-Chain Infrastructure"]
+        IDX[Indexer<br/>ethers.js v6]
+        RD[Redis / BullMQ]
+        BE[Backend API<br/>Express.js]
+        DB[(PostgreSQL)]
+    end
+
+    WEB --> WC
+    WC --> VF
+    WC --> SE
+    VF --> SE
+    VF --> VR
+    SE --> RM
+    RM --> AO
+    SE --> PA
+    PA --> PD
+    SE --> RS
+
+    SE -- "emits events" --> IDX
+    VF -- "emits VaultDeployed" --> IDX
+    IDX --> RD
+    RD --> BE
+    BE --> DB
+    WEB --> BE
+```
+
+---
+
+## Monorepo Structure
+
+```
+ZibaXeer/
+├── apps/
+│   ├── backend/          # Express.js API + BullMQ workers
+│   ├── frontend/         # Next.js 15 dashboard
+│   └── indexer/          # ethers.js on-chain event listener
+├── contracts/            # Foundry smart contract project
+├── packages/
+│   ├── db/               # Shared Prisma client + schema
+│   ├── sdk/              # Protocol SDK (WIP)
+│   ├── types/            # Shared TypeScript types (job payloads)
+│   └── utils/            # Shared utility helpers
+└── docs/                 # This documentation
+```
+
+---
+
+## Trade Execution Flow
+
+The complete sequence from a leader executing a trade to it appearing in the dashboard:
+
+```mermaid
+sequenceDiagram
+    participant Leader as Vault Leader
+    participant Vault as CopyTradingVault
+    participant Risk as RiskManager
+    participant Argus as ArgusOracle
+    participant PaxDex as PaxDex Router
+    participant Idx as Indexer
+    participant Q as BullMQ / Redis
+    participant W as TradeWorker
+    participant DB as PostgreSQL
+
+    Leader->>Vault: executeGroupTrade(tokenIn, tokenOut, amount)
+    Vault->>Risk: validateTrade(leader)
+    Risk->>Argus: isEligible(leader, 600)
+    Argus-->>Risk: true / false
+    Risk-->>Vault: approved
+
+    Vault->>PaxDex: swap(tokenIn, tokenOut, amount)
+    PaxDex-->>Vault: amountReceived
+    Vault-->>Vault: emit TradeExecuted(tokenIn, tokenOut, totalAmountSwapped)
+
+    Idx->>Vault: listening via ethers.js Contract.on()
+    Vault-->>Idx: TradeExecuted event fires
+    Idx->>Q: tradeQueue.add(TradeJobPayload)
+    Idx->>Q: snapshotQueue.add({ vaultAddress })
+
+    Q-->>W: TradeWorker picks up job
+    W->>DB: prisma.trade.create(...)
+    W-->>W: emit completed
+```
+
+---
+
+## Vault Deployment Flow
+
+```mermaid
+sequenceDiagram
+    participant Leader as Leader Wallet
+    participant Factory as VaultFactory
+    participant Argus as ArgusOracle
+    participant Registry as VaultRegistry
+    participant Idx as Indexer
+    participant Q as BullMQ / Redis
+    participant W as VaultWorker
+    participant DB as PostgreSQL
+
+    Leader->>Factory: createVault(name, assetToken, dexAdapter, revenueSplitter)
+    Factory->>Argus: validateTrade(leader) via RiskManager
+    Argus-->>Factory: eligible
+
+    Factory->>Factory: deploy ERC1967Proxy → CopyTradingVault
+    Factory->>Registry: registerVault(leader, vaultProxy)
+    Factory-->>Factory: emit VaultDeployed(leader, vaultProxy)
+
+    Idx-->>Factory: VaultDeployed event fires
+    Idx->>Idx: call vaultContract.vaultName() + .baseAsset()
+    Idx->>Q: vaultDeployedQueue.add(VaultDeployedPayload)
+    Idx->>Idx: listenToVault(vaultProxy) — start watching new vault
+
+    Q-->>W: VaultWorker picks up job
+    W->>DB: prisma.user.upsert(leader)
+    W->>DB: prisma.vault.create(...)
+```
+
+---
+
+## Follower Subscription Flow
+
+```mermaid
+sequenceDiagram
+    participant Follower as Follower Wallet
+    participant Vault as CopyTradingVault
+    participant Idx as Indexer
+    participant Q as BullMQ / Redis
+    participant W as FollowerWorker
+    participant DB as PostgreSQL
+
+    Follower->>Vault: subscribe(amount)
+    Vault->>Vault: safeTransferFrom(follower, vault, amount)
+    Vault-->>Vault: emit FollowerSubscribed(follower, amount)
+
+    Idx-->>Vault: FollowerSubscribed event fires
+    Idx->>Q: followerEventQueue.add({ action: 'DEPOSIT', ... })
+
+    Q-->>W: FollowerWorker picks up job
+    W->>DB: prisma.user.upsert(follower)
+    W->>DB: prisma.followerSubscription.upsert(...)
+```
+
+---
+
+## Revenue Distribution Flow
+
+```mermaid
+flowchart LR
+    TP[Total Realized Profit] --> PS{RevenueSplitter}
+    PS -->|70–90%| FP[Follower Remaining]
+    PS -->|5–25%| LP[Leader Share]
+    PS -->|2–5%| PP[Protocol Fee]
+    PP --> TR[Protocol Treasury]
+    LP --> LW[Leader Wallet]
+    FP --> FW[Auto-compounded or returned<br/>to Follower Wallet]
+```
+
+The split percentages are configurable per vault and stored in `leaderShareBps` and `protocolFeeBps` on the `RevenueSplitter` contract.
+
+---
+
+## Queue Architecture
+
+The indexer produces to four named BullMQ queues. The backend workers consume them.
+
+| Queue | Producer | Consumer | Purpose |
+|---|---|---|---|
+| `TradeProcessingQueue` | `trade.processor.ts` | `trade.worker.ts` | Persist trade to DB |
+| `SnapshotCalculationQueue` | `pnl.processor.ts` | `snapshot.worker.ts` | Recalculate ROI/drawdown |
+| `VaultDeployedQueue` | `vaultFactory.listener.ts` | `vault.worker.ts` | Register new vault in DB |
+| `FollowerEventQueue` | `vault.listener.ts` | `follower.worker.ts` | Sync follower subscriptions |
+
+---
+
+## Vault Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Leader submits createVault()
+    Pending --> Active: Argus score ≥ 600
+    Active --> Paused: Circuit breaker / leader pause
+    Paused --> Active: Conditions cleared
+    Active --> Settled: All positions closed + PnL settled
+    Settled --> [*]: Funds returned to followers
+    Pending --> Rejected: Argus verification failed
+    Rejected --> [*]
+```
+
+---
+
+## Contract Dependency Map
+
+```mermaid
+classDiagram
+    class VaultFactory {
+        +createVault()
+        +vaultImplementation
+        +registry VaultRegistry
+        +riskManager RiskManager
+    }
+
+    class CopyTradingVault {
+        +leader address
+        +vaultName string
+        +baseAsset address
+        +subscribe(amount)
+        +unsubscribe(amount)
+        +executeGroupTrade(...)
+        +settleFollowerProfit(follower)
+    }
+
+    class RiskManager {
+        +validateTrade(leader) bool
+        +triggerCircuitBreaker(vault)
+        +MAX_SLIPPAGE_BPS 500
+        +MIN_REPUTATION_SCORE 600
+    }
+
+    class ArgusOracle {
+        +isEligible(address, minScore) bool
+        +getScore(address) uint256
+    }
+
+    class RevenueSplitter {
+        +splitProfit(token, profit, leader)
+        +leaderShareBps
+        +protocolFeeBps
+    }
+
+    class PaxDexAdapter {
+        +swap(tokenIn, tokenOut, amount) uint256
+        +paxDexRouter address
+    }
+
+    class VaultRegistry {
+        +registerVault(leader, vault)
+        +isRegisteredVault mapping
+        +leaderToVaults mapping
+    }
+
+    VaultFactory --> CopyTradingVault : deploys proxy
+    VaultFactory --> VaultRegistry : registers
+    VaultFactory --> RiskManager : validates leader
+    CopyTradingVault --> RiskManager : validates trades
+    CopyTradingVault --> PaxDexAdapter : routes swaps
+    CopyTradingVault --> RevenueSplitter : distributes profit
+    RiskManager --> ArgusOracle : queries reputation
+```

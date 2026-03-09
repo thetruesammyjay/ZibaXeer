@@ -1,0 +1,228 @@
+---
+title: API Reference
+description: ZibaXeer REST API endpoints, request parameters, and response shapes
+---
+
+# API Reference
+
+**Base URL:** `http://localhost:4000` (development) / `https://api.zibaxeer.io` (production)
+
+All responses follow the shape:
+
+```json
+{ "success": true, "data": { ... } }
+// or on error:
+{ "success": false, "message": "Error description" }
+```
+
+---
+
+## Health Check
+
+### `GET /health`
+
+Verifies the API server is running.
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-09T12:00:00.000Z",
+  "service": "Zibaxeer API Server"
+}
+```
+
+---
+
+## Vaults
+
+### `GET /api/vaults`
+
+Returns all vaults ordered by creation date (newest first), with leader info and aggregate counts.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "contractAddress": "0x...",
+      "name": "Alpha Scalper",
+      "baseAsset": "0x...",
+      "tvl": "50000000000000000000000",
+      "roi": 12.4,
+      "drawdown": 3.1,
+      "status": "ACTIVE",
+      "createdAt": "2026-03-01T00:00:00.000Z",
+      "leader": {
+        "id": "uuid",
+        "walletAddress": "0x...",
+        "argusScore": 780
+      },
+      "_count": {
+        "followers": 42,
+        "trades": 317
+      }
+    }
+  ]
+}
+```
+
+---
+
+### `GET /api/vaults/:id`
+
+Retrieve a single vault by its UUID **or** contract address. Returns the vault with leader info, last 10 trades, and follower count.
+
+**Parameters:**
+
+| Param | Location | Description |
+|---|---|---|
+| `id` | path | Vault UUID or `contractAddress` (EVM address) |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "contractAddress": "0x...",
+    "name": "Alpha Scalper",
+    "tvl": "50000000000000000000000",
+    "roi": 12.4,
+    "drawdown": 3.1,
+    "status": "ACTIVE",
+    "leader": { "walletAddress": "0x...", "argusScore": 780 },
+    "trades": [
+      {
+        "id": "uuid",
+        "txHash": "0x...",
+        "assetIn": "0x...",
+        "assetOut": "0x...",
+        "amountIn": "1000000000",
+        "amountOut": "998000000",
+        "isProfit": false,
+        "pnlAmount": "0",
+        "executedAt": "2026-03-09T11:30:00.000Z"
+      }
+    ],
+    "_count": { "followers": 42 }
+  }
+}
+```
+
+**Error — 404:**
+
+```json
+{ "success": false, "message": "Vault not found" }
+```
+
+---
+
+## Analytics
+
+### `GET /api/analytics/global`
+
+Returns protocol-wide aggregate metrics across all `ACTIVE` vaults.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "activeVaultsCount": 24,
+    "totalTvl": "1200000000000000000000000",
+    "totalTrades": 8420,
+    "winRate": 58.3
+  }
+}
+```
+
+---
+
+### `GET /api/analytics/vault/:id`
+
+Returns performance analytics for a specific vault.
+
+**Parameters:**
+
+| Param | Location | Description |
+|---|---|---|
+| `id` | path | Vault UUID or contract address |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "vaultId": "uuid",
+    "tvl": "50000000000000000000000",
+    "roi": 12.4,
+    "drawdown": 3.1,
+    "totalTrades": 317,
+    "profitableTrades": 185,
+    "winRate": 58.36
+  }
+}
+```
+
+**Error — 404:**
+
+```json
+{ "success": false, "message": "Vault not found" }
+```
+
+---
+
+## Leaderboard
+
+### `GET /api/leaderboard`
+
+Returns vault leaders ranked by Argus reputation score (highest first). Only includes users with `argusScore > 0`.
+
+**Query Parameters:**
+
+| Param | Type | Default | Max | Description |
+|---|---|---|---|---|
+| `limit` | number | `50` | `100` | Number of results to return |
+| `offset` | number | `0` | — | Pagination offset |
+
+**Example:** `GET /api/leaderboard?limit=10&offset=0`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "walletAddress": "0x...",
+      "argusScore": 892,
+      "_count": { "vaultsLed": 2 }
+    }
+  ],
+  "pagination": {
+    "total": 156,
+    "limit": 10,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+---
+
+## Error Codes
+
+| HTTP Status | Meaning |
+|---|---|
+| `200` | Success |
+| `404` | Resource not found (vault does not exist in DB) |
+| `500` | Internal server error — check backend logs |

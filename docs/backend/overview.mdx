@@ -1,0 +1,123 @@
+---
+title: Backend Overview
+description: Express.js API server, Prisma data layer, and BullMQ worker architecture
+---
+
+# Backend Overview
+
+**Location:** `apps/backend/`  
+**Runtime:** Node.js 20 LTS  
+**Framework:** Express.js  
+**Database:** PostgreSQL 16 via Prisma ORM  
+**Queue:** BullMQ + Redis
+
+The backend serves two roles:
+
+1. **REST API** — exposes vault, analytics, and leaderboard data to the frontend
+2. **BullMQ Workers** — consume jobs from Redis queues produced by the indexer, write to PostgreSQL
+
+---
+
+## Entry Point
+
+`apps/backend/src/index.ts` bootstraps the Express server and imports all workers:
+
+```typescript
+import './workers/index'; // Activates all BullMQ workers on startup
+
+app.use('/api/vaults', vaultRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.listen(4000);
+```
+
+---
+
+## Data Models (Prisma)
+
+Defined in `packages/db/prisma/schema.prisma`:
+
+### `User`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `String` | UUID primary key |
+| `walletAddress` | `String` | Unique, checksummed EVM address |
+| `argusScore` | `Int` | Reputation score from Argus Engine (default 0) |
+| `vaultsLed` | `Vault[]` | Vaults this user leads |
+| `subscriptions` | `FollowerSubscription[]` | Vaults this user follows |
+
+### `Vault`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `String` | UUID primary key |
+| `contractAddress` | `String` | Unique, on-chain proxy address |
+| `leaderId` | `String` | FK → `User.id` |
+| `name` | `String` | Vault display name |
+| `baseAsset` | `String` | ERC-20 address for deposits |
+| `tvl` | `String` | Total value locked (stored as string for BigInt safety) |
+| `roi` | `Float` | Return on investment % |
+| `drawdown` | `Float` | Maximum drawdown % |
+| `riskScore` | `Int` | Argus-derived risk score |
+| `status` | `Enum` | `ACTIVE` \| `PAUSED` \| `LIQUIDATED` |
+| `createdAt` | `DateTime` | Vault creation timestamp |
+
+### `Trade`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `String` | UUID primary key |
+| `txHash` | `String` | Unique, on-chain transaction hash |
+| `vaultId` | `String` | FK → `Vault.id` |
+| `assetIn` | `String` | Token sold (ERC-20 address) |
+| `assetOut` | `String` | Token received (ERC-20 address) |
+| `amountIn` | `String` | Amount of `assetIn` (BigInt string) |
+| `amountOut` | `String` | Amount of `assetOut` (BigInt string) |
+| `isProfit` | `Boolean` | Whether this trade closed profitably |
+| `pnlAmount` | `String` | PnL amount (BigInt string) |
+| `executedAt` | `DateTime` | Block timestamp |
+
+### `FollowerSubscription`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `String` | UUID primary key |
+| `vaultId` | `String` | FK → `Vault.id` |
+| `userId` | `String` | FK → `User.id` |
+| `depositedAmount` | `String` | Current deposited balance (BigInt string) |
+| `subscribedAt` | `DateTime` | First subscription timestamp |
+
+Unique constraint: `@@unique([vaultId, userId])`
+
+---
+
+## Worker Architecture
+
+The workers run inside the same backend process. They are imported by `workers/index.ts` which is itself imported in `index.ts`.
+
+```
+workers/
+├── index.ts          # Registers all workers (imports side-effects)
+├── trade.worker.ts   # Consumes TradeProcessingQueue
+├── snapshot.worker.ts # Consumes SnapshotCalculationQueue
+├── vault.worker.ts   # Consumes VaultDeployedQueue
+└── follower.worker.ts # Consumes FollowerEventQueue
+```
+
+See [Workers](./workers) for detailed worker documentation.
+
+---
+
+## Configuration
+
+`apps/backend/src/config/redis.ts` — ioredis connection shared by all workers:
+
+```typescript
+import { Redis } from 'ioredis';
+const redis = new Redis(process.env.REDIS_URL ?? 'redis://127.0.0.1:6379', {
+    maxRetriesPerRequest: null, // Required by BullMQ
+});
+```

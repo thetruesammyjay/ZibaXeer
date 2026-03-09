@@ -1,0 +1,228 @@
+---
+title: Indexer
+description: On-chain event indexer — ethers.js listeners feeding the BullMQ pipeline
+---
+
+# Indexer
+
+**Location:** `apps/indexer/`  
+**Runtime:** Node.js 20 (ESNext modules, `tsx`)  
+**Libraries:** ethers.js v6, BullMQ v5, ioredis
+
+The indexer is a long-running Node.js process that connects to the HyperPaxeer RPC, listens for smart contract events using ethers.js, and feeds jobs into four BullMQ queues that the backend workers consume.
+
+---
+
+## Directory Structure
+
+```
+apps/indexer/src/
+├── config/
+│   ├── contracts.ts     # ethers.js provider + contract factory functions
+│   └── redis.ts         # Shared ioredis connection
+├── queues/
+│   └── index.ts         # 4 BullMQ Queue instances
+├── listeners/
+│   ├── vault.listener.ts         # Watches individual vault events
+│   └── vaultFactory.listener.ts  # Watches VaultFactory for new deployments
+├── processors/
+│   ├── trade.processor.ts        # Builds TradeJobPayload → TradeProcessingQueue
+│   └── pnl.processor.ts          # Pushes snapshot jobs → SnapshotCalculationQueue
+└── index.ts             # Entry point — boots all listeners
+```
+
+---
+
+## Pipeline
+
+```
+HyperPaxeer RPC
+       │
+  ethers.js Contract.on()
+       │
+  ┌────┴─────────────────────────────────────┐
+  │ vault.listener.ts                        │
+  │  ├─ TradeExecuted → trade.processor.ts   │
+  │  │                → pnl.processor.ts     │
+  │  ├─ FollowerSubscribed → followerQueue   │
+  │  └─ FollowerUnsubscribed → followerQueue │
+  └──────────────────────────────────────────┘
+  ┌────┴──────────────────────────────────────┐
+  │ vaultFactory.listener.ts                  │
+  │  └─ VaultDeployed → vaultDeployedQueue    │
+  │                   → listenToVault(proxy)  │
+  └───────────────────────────────────────────┘
+       │
+   Redis (BullMQ)
+       │
+  Backend Workers
+```
+
+---
+
+## Configuration
+
+### `config/contracts.ts`
+
+```typescript
+export const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+export const getVaultFactoryContract = () =>
+    new ethers.Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI.abi, provider);
+
+export const getVaultContract = (vaultAddress: string) =>
+    new ethers.Contract(vaultAddress, CopyTradingVaultABI.abi, provider);
+```
+
+### `config/redis.ts`
+
+```typescript
+const redis = new Redis(process.env.REDIS_URL ?? 'redis://127.0.0.1:6379', {
+    maxRetriesPerRequest: null, // Required by BullMQ
+});
+```
+
+### `queues/index.ts`
+
+```typescript
+export const tradeQueue       = new Queue('TradeProcessingQueue',     { connection: redis });
+export const snapshotQueue    = new Queue('SnapshotCalculationQueue', { connection: redis });
+export const vaultDeployedQueue = new Queue('VaultDeployedQueue',     { connection: redis });
+export const followerEventQueue = new Queue('FollowerEventQueue',     { connection: redis });
+```
+
+---
+
+## Event Listeners
+
+### `vault.listener.ts` — Per-vault events
+
+Listens to a single `CopyTradingVault` proxy for three events:
+
+**`TradeExecuted(tokenIn, tokenOut, totalAmountSwapped)`**
+```typescript
+vault.on('TradeExecuted', async (tokenIn, tokenOut, totalAmountSwapped, event) => {
+    await processTrade(vaultAddress, tokenIn, tokenOut, totalAmountSwapped, event);
+    await updateVaultMetrics(vaultAddress);
+});
+```
+
+**`FollowerSubscribed(follower, amount)`**
+```typescript
+vault.on('FollowerSubscribed', async (follower, amount, event) => {
+    await followerEventQueue.add('follower-event', {
+        vaultAddress,
+        followerAddress: follower,
+        amount: amount.toString(),
+        action: 'DEPOSIT',
+    });
+});
+```
+
+**`FollowerUnsubscribed(follower, amount)`**
+```typescript
+vault.on('FollowerUnsubscribed', async (follower, amount, event) => {
+    await followerEventQueue.add('follower-event', {
+        vaultAddress,
+        followerAddress: follower,
+        amount: amount.toString(),
+        action: 'WITHDRAW',
+    });
+});
+```
+
+---
+
+### `vaultFactory.listener.ts` — New vault deployments
+
+Listens to `VaultFactory` for the `VaultDeployed(leader, vaultProxy)` event:
+
+```typescript
+factory.on('VaultDeployed', async (leader, vaultProxy, event) => {
+    const vaultContract = getVaultContract(vaultProxy);
+
+    // Read vault metadata on-chain (not in the event itself)
+    const [name, baseAsset] = await Promise.all([
+        vaultContract.vaultName(),
+        vaultContract.baseAsset(),
+    ]);
+
+    await vaultDeployedQueue.add('vault-deployed', {
+        vaultAddress: vaultProxy,
+        leader,
+        name,
+        baseAsset,
+        txHash: event.log.transactionHash,
+    });
+
+    // Immediately start watching this vault's trades/subscriptions
+    listenToVault(vaultProxy);
+});
+```
+
+---
+
+## Trade Processor
+
+`processors/trade.processor.ts` maps the on-chain `TradeExecuted` event to the `TradeJobPayload` shape the backend `trade.worker.ts` expects:
+
+| Event Param | Job Payload Field | Notes |
+|---|---|---|
+| `tokenIn` | `assetIn` | |
+| `tokenOut` | `assetOut` | |
+| `totalAmountSwapped` | `amountOut` | The amount the vault received |
+| *(N/A)* | `amountIn` | Set to `"0"` — not emitted by event |
+| *(N/A)* | `isProfit` | Set to `false` — determined later by `ProfitSettled` |
+| *(N/A)* | `pnlAmount` | Set to `"0"` — determined later |
+| `event.log.transactionHash` | `txHash` | |
+| `event.log.blockNumber` | used to get `timestamp` | Via `provider.getBlock()` |
+
+---
+
+## Entry Point
+
+`src/index.ts` boots the indexer:
+
+```typescript
+import { listenToVaultFactory } from './listeners/vaultFactory.listener.js';
+import { listenToVault } from './listeners/vault.listener.js';
+
+const KNOWN_VAULT_ADDRESSES = (process.env.KNOWN_VAULT_ADDRESSES ?? '')
+    .split(',')
+    .filter(Boolean);
+
+// Watch for new vault deployments
+listenToVaultFactory();
+
+// Watch any vaults already deployed before this process started
+for (const address of KNOWN_VAULT_ADDRESSES) {
+    listenToVault(address);
+}
+
+console.log('[Indexer] 🚀 ZibaXeer Indexer started');
+```
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `RPC_URL` | ✅ | HyperPaxeer JSON-RPC endpoint |
+| `VAULT_FACTORY_ADDRESS` | ✅ | Deployed `VaultFactory` proxy address |
+| `REDIS_URL` | ✅ | Redis connection string (must match backend) |
+| `KNOWN_VAULT_ADDRESSES` | ❌ | Comma-separated list of pre-existing vault addresses |
+
+---
+
+## Running
+
+```bash
+cd apps/indexer
+
+# Development (hot reload)
+pnpm dev
+
+# Production
+pnpm start
+```
