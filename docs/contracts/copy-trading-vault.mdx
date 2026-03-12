@@ -1,6 +1,7 @@
 ---
 title: CopyTradingVault
 description: Core vault contract — trade execution, follower management, and PnL settlement
+icon: vault
 ---
 
 # CopyTradingVault
@@ -51,7 +52,9 @@ event TradeExecuted(
 
 Emitted every time the leader executes a group trade. The indexer captures this to record the trade in PostgreSQL.
 
-> ⚠️ **Note:** This event does **not** contain `isProfit` or `pnlAmount`. Those are derived separately via `ProfitSettled`.
+<Warning>
+  This event does **not** emit `isProfit` or `pnlAmount`. Those values are derived separately when the `ProfitSettled` event fires — profit is only known after a follower position is closed.
+</Warning>
 
 ### `FollowerSubscribed`
 
@@ -160,7 +163,13 @@ Calculates current share value against the high water mark. If profitable:
 
 ## Security Notes
 
-- `executeGroupTrade` is `onlyOwner` — only the vault leader can initiate trades
-- The `RiskManager` acts as a second gate: even the leader cannot trade if their Argus score drops below 600 or if the vault is frozen by the protocol
-- `settleFollowerProfit` is called automatically before any withdrawal via `unsubscribe`, ensuring followers can never withdraw without settling outstanding PnL first
-- Uses `SafeERC20` for all token transfers
+<Warning>
+  `executeGroupTrade` is restricted to `onlyOwner`. Even the vault leader cannot trade if their Argus score drops below 600 or if the vault has been frozen by the protocol admin via `RiskManager.triggerCircuitBreaker()`.
+</Warning>
+
+| Guard | What It Enforces |
+|---|---|
+| `onlyOwner` | Only the vault leader can call `executeGroupTrade` |
+| `RiskManager.validateTrade` | Blocks trading if Argus score < 600 or vault is frozen |
+| `settleFollowerProfit` before exit | PnL always settles before funds leave the vault |
+| `SafeERC20` | All token transfers use OpenZeppelin's safe transfer wrapper |

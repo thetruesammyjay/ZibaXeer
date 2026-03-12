@@ -1,6 +1,7 @@
 ---
 title: Deployment
 description: Deploy ZibaXeer contracts to HyperPaxeer, and ship the backend and frontend
+icon: cloud-arrow-up
 ---
 
 # Deployment
@@ -43,19 +44,33 @@ forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory 
 
 Deploy contracts in this order to satisfy dependencies:
 
-```
-1. ArgusOracle
-2. RiskManager        --constructor ArgusOracle
-3. VaultRegistry
-4. RevenueSplitter    --constructor treasury, leaderShareBps, protocolFeeBps
-5. PaxDexAdapter      --constructor paxDexRouter
-6. CopyTradingVault   (implementation only, no init)
-7. VaultFactory       --constructor VaultRegistry, RiskManager, CopyTradingVault impl
-```
+<Steps>
+  <Step title="ArgusOracle">
+    No dependencies. Deploy first.
+  </Step>
+  <Step title="RiskManager">
+    Requires: `ArgusOracle` address as constructor argument.
+  </Step>
+  <Step title="VaultRegistry">
+    No dependencies beyond initial owner address.
+  </Step>
+  <Step title="RevenueSplitter">
+    Requires: `treasury`, `leaderShareBps`, `protocolFeeBps` as constructor arguments.
+  </Step>
+  <Step title="PaxDexAdapter">
+    Requires: `paxDexRouter` address as constructor argument.
+  </Step>
+  <Step title="CopyTradingVault (implementation)">
+    Deploy the implementation contract only. **Do not call `initialize`** — the proxy constructor handles that.
+  </Step>
+  <Step title="VaultFactory">
+    Requires: `VaultRegistry`, `RiskManager`, and `CopyTradingVault` implementation address.
 
-After deployment:
-- Call `VaultRegistry.setAuthorizedFactory(VaultFactory address)`
-- Call `VaultFactory.initialize(owner, implAddress, registryAddress, riskManagerAddress)`
+    After deployment run:
+    - `VaultRegistry.setAuthorizedFactory(VaultFactory address)`
+    - `VaultFactory.initialize(owner, implAddress, registryAddress, riskManagerAddress)`
+  </Step>
+</Steps>
 
 ### Post-Deploy Configuration
 
@@ -149,17 +164,17 @@ NEXT_PUBLIC_API_URL=https://api.zibaxeer.io
 
 ## Infrastructure Checklist
 
-Before going live, verify:
+Before going live, verify every item:
 
-- [ ] All contracts deployed and verified on PaxScan
-- [ ] `VaultRegistry.authorizedFactory` set to `VaultFactory` address
-- [ ] `ArgusOracle` pointing to live Paxeer Argus endpoint
-- [ ] PostgreSQL database migrated with latest schema
-- [ ] Redis instance running and accessible to both backend and indexer
-- [ ] `VAULT_FACTORY_ADDRESS` set in indexer environment
-- [ ] Backend `/health` returns `200 OK`
-- [ ] Frontend `NEXT_PUBLIC_API_URL` pointing to live backend
-- [ ] CORS configured in backend to allow frontend domain
+<Check>All contracts deployed and verified on PaxScan</Check>
+<Check>`VaultRegistry.authorizedFactory` set to `VaultFactory` address</Check>
+<Check>`ArgusOracle` pointing to live Paxeer Argus endpoint</Check>
+<Check>PostgreSQL database migrated with latest schema</Check>
+<Check>Redis instance running and accessible to both backend and indexer</Check>
+<Check>`VAULT_FACTORY_ADDRESS` set in indexer environment</Check>
+<Check>Backend `/health` returns `200 OK`</Check>
+<Check>Frontend `NEXT_PUBLIC_API_URL` pointing to live backend</Check>
+<Check>CORS configured in backend to allow frontend domain</Check>
 
 ---
 
@@ -181,4 +196,6 @@ cast send $PROXY_ADDRESS "upgradeToAndCall(address,bytes)" \
   --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
-> ⚠️ Production upgrades should go through a **multi-sig** (e.g. Gnosis Safe) — never upgrade directly from a single EOA.
+<Warning>
+  Production upgrades should always go through a **multi-sig** (e.g. Gnosis Safe). Never upgrade directly from a single EOA in production.
+</Warning>

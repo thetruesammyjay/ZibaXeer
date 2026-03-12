@@ -1,6 +1,7 @@
 ---
 title: Workers
 description: BullMQ background workers — trade, snapshot, vault, and follower processing
+icon: gears
 ---
 
 # Workers
@@ -123,6 +124,10 @@ interface FollowerPayload {
 ---
 
 ## Error Handling
+
+<Note>
+  All workers throw on failure, causing BullMQ to mark the job as `failed` and retry with exponential backoff. Failed jobs persist in Redis and can be inspected via [Bull Board](https://github.com/felixmosh/bull-board) or any BullMQ-compatible dashboard.
+</Note>
 
 All workers throw errors on failure, which causes BullMQ to mark the job as `failed` and retry according to its default backoff policy.
 

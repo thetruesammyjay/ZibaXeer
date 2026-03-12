@@ -1,0 +1,108 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "ZibaXeer",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#DC4B0F",
+    "light": "#F97316",
+    "dark": "#DC2626",
+    "background": {
+      "dark": "#0F172A"
+    },
+    "anchors": {
+      "from": "#F97316",
+      "to": "#DC2626"
+    }
+  },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/thetruesammyjay/ZibaXeer"
+    },
+    {
+      "name": "X (Twitter)",
+      "url": "https://x.com/thatbwoysammyj"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://github.com/thetruesammyjay/ZibaXeer"
+  },
+  "tabs": [
+    {
+      "name": "Backend API",
+      "url": "backend"
+    },
+    {
+      "name": "Smart Contracts",
+      "url": "contracts"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub Repository",
+      "icon": "github",
+      "url": "https://github.com/thetruesammyjay/ZibaXeer"
+    },
+    {
+      "name": "X (Twitter)",
+      "icon": "x-twitter",
+      "url": "https://x.com/thatbwoysammyj"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "index",
+        "getting-started",
+        "architecture"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": [
+        "deployment",
+        "network"
+      ]
+    },
+    {
+      "group": "Backend",
+      "pages": [
+        "backend/overview",
+        "backend/api-reference",
+        "backend/workers"
+      ]
+    },
+    {
+      "group": "Smart Contracts",
+      "pages": [
+        "contracts/overview",
+        "contracts/copy-trading-vault",
+        "contracts/vault-factory",
+        "contracts/vault-registry",
+        "contracts/paxdex-adapter",
+        "contracts/revenue-splitter",
+        "contracts/risk-manager"
+      ]
+    },
+    {
+      "group": "Indexer",
+      "pages": [
+        "indexer"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/thetruesammyjay/ZibaXeer",
+    "x": "https://x.com/thatbwoysammyj"
+  }
+}

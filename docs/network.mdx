@@ -1,6 +1,7 @@
 ---
 title: Network
 description: HyperPaxeer network configuration, chain details, and wallet setup
+icon: network-wired
 ---
 
 # Network
@@ -65,10 +66,9 @@ Paxeer's funded wallet model provides immediate capital liquidity for both vault
 
 The Argus Risk Engine is Paxeer's native reputation system. ZibaXeer integrates it via the `ArgusOracle` contract.
 
-- Scores are derived from **500+ on-chain signals** across a leader's trading history
-- Minimum score required to create a vault: **600 / 1000**
-- Scores are queried on-chain by `RiskManager` before every trade
-- Lower-scored leaders are blocked from executing trades — protecting follower funds
+<Info>
+  Argus scores are derived from **500+ on-chain signals** across a leader's trading history. The minimum score required to create a vault or execute trades is **600 / 1000**. Leaders whose scores drop below this threshold are automatically blocked by `RiskManager`.
+</Info>
 
 ```solidity
 // RiskManager.sol
@@ -86,10 +86,17 @@ function validateTrade(address vaultLeader) external view returns (bool) {
 
 ## Useful Links
 
-| Resource | URL |
-|---|---|
-| HyperPaxeer RPC | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
-| Block Explorer | [paxscan.paxeer.app](https://paxscan.paxeer.app) |
-| Paxeer Network Docs | [docs.hyperpaxeer.com](https://docs.hyperpaxeer.com) |
-| Colosseum Dashboard | [colosseum.hyperpaxeer.com/dashboard](https://colosseum.hyperpaxeer.com/dashboard) |
-| Hackathon | [build.hyperpaxeer.com/hackathon](https://build.hyperpaxeer.com/hackathon) |
+<CardGroup cols={2}>
+  <Card title="PaxScan Explorer" icon="magnifying-glass" href="https://paxscan.paxeer.app">
+    Browse blocks, transactions, and verified contracts on HyperPaxeer
+  </Card>
+  <Card title="Paxeer Network Docs" icon="book-open" href="https://docs.hyperpaxeer.com">
+    Official HyperPaxeer chain documentation and developer guides
+  </Card>
+  <Card title="Colosseum Dashboard" icon="trophy" href="https://colosseum.hyperpaxeer.com/dashboard">
+    Live leaderboard of top-performing traders ranked by Argus reputation score
+  </Card>
+  <Card title="Hackathon" icon="code" href="https://build.hyperpaxeer.com/hackathon">
+    HyperPaxeer developer hackathon — prizes, tracks, and submission info
+  </Card>
+</CardGroup>

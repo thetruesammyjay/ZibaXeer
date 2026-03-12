@@ -1,6 +1,7 @@
 ---
 title: Backend Overview
 description: Express.js API server, Prisma data layer, and BullMQ worker architecture
+icon: server
 ---
 
 # Backend Overview
@@ -13,8 +14,14 @@ description: Express.js API server, Prisma data layer, and BullMQ worker archite
 
 The backend serves two roles:
 
-1. **REST API** — exposes vault, analytics, and leaderboard data to the frontend
-2. **BullMQ Workers** — consume jobs from Redis queues produced by the indexer, write to PostgreSQL
+<CardGroup cols={2}>
+  <Card title="REST API" icon="server">
+    Exposes vault, analytics, and leaderboard data to the frontend via Express.js routes on port `4000`.
+  </Card>
+  <Card title="BullMQ Workers" icon="gears">
+    Consume jobs from Redis queues produced by the indexer and persist results to PostgreSQL.
+  </Card>
+</CardGroup>
 
 ---
 

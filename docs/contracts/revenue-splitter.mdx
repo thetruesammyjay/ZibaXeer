@@ -1,6 +1,7 @@
 ---
 title: RevenueSplitter
 description: Calculates and distributes realized PnL between followers, leaders, and the protocol treasury
+icon: chart-pie
 ---
 
 # RevenueSplitter
@@ -104,4 +105,6 @@ With `leaderShareBps = 1500` and `protocolFeeBps = 300`, on a `1000 USDC` realiz
 
 ## Zero Management Fees
 
-`RevenueSplitter` only processes **realized profit**. There are no recurring management fees. If a vault performs poorly, neither the leader nor the protocol collects anything — fully aligning incentives.
+<Note>
+  `RevenueSplitter` only processes **realized profit**. There are no recurring management fees. If a vault performs poorly, neither the leader nor the protocol collects anything — incentives are fully aligned between leaders and followers by design.
+</Note>

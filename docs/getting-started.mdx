@@ -1,6 +1,7 @@
 ---
 title: Getting Started
 description: Install ZibaXeer locally and run the full development stack
+icon: rocket
 ---
 
 # Getting Started
@@ -24,101 +25,106 @@ This guide walks you through cloning the repo, installing dependencies, configur
 
 ## Installation
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/thetruesammyjay/ZibaXeer.git
-cd ZibaXeer
-```
-
-### 2. Install all workspace dependencies
-
-```bash
-pnpm install
-```
-
-This installs dependencies for all packages: `apps/backend`, `apps/frontend`, `apps/indexer`, and all `packages/*`.
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/thetruesammyjay/ZibaXeer.git
+    cd ZibaXeer
+    ```
+  </Step>
+  <Step title="Install all workspace dependencies">
+    ```bash
+    pnpm install
+    ```
+    This installs dependencies for all packages: `apps/backend`, `apps/frontend`, `apps/indexer`, and all `packages/*`.
+  </Step>
+</Steps>
 
 ---
 
 ## Environment Variables
 
-### Root `.env`
+<Tabs>
+  <Tab title="Root .env">
+    Create a `.env` file at the project root:
 
-Create a `.env` file at the project root:
+    ```bash
+    # ─── Network ──────────────────────────────────────────────
+    HYPERPAXEER_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+    CHAIN_ID=125
 
-```bash
-# ─── Network ──────────────────────────────────────────────
-HYPERPAXEER_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
-CHAIN_ID=125
+    # ─── Deployer ──────────────────────────────────────────────
+    DEPLOYER_PRIVATE_KEY=0x...
+    DEPLOYER_ADDRESS=0x...
 
-# ─── Deployer ──────────────────────────────────────────────
-DEPLOYER_PRIVATE_KEY=0x...
-DEPLOYER_ADDRESS=0x...
+    # ─── Argus Oracle ──────────────────────────────────────────
+    ARGUS_ORACLE_ENDPOINT=https://api.hyperpaxeer.com/argus/v1
+    ARGUS_API_KEY=your_api_key_here
+    ```
+  </Tab>
+  <Tab title="Backend">
+    Create `apps/backend/.env`:
 
-# ─── Argus Oracle ──────────────────────────────────────────
-ARGUS_ORACLE_ENDPOINT=https://api.hyperpaxeer.com/argus/v1
-ARGUS_API_KEY=your_api_key_here
-```
+    ```bash
+    # ─── Database ──────────────────────────────────────────────
+    DATABASE_URL=postgresql://postgres:password@localhost:5432/zibaxeer
 
-### Backend `apps/backend/.env`
+    # ─── Redis ─────────────────────────────────────────────────
+    REDIS_URL=redis://127.0.0.1:6379
 
-```bash
-# ─── Database ──────────────────────────────────────────────
-DATABASE_URL=postgresql://postgres:password@localhost:5432/zibaxeer
+    # ─── Server ────────────────────────────────────────────────
+    PORT=4000
+    ```
+  </Tab>
+  <Tab title="Indexer">
+    Create `apps/indexer/.env`:
 
-# ─── Redis ─────────────────────────────────────────────────
-REDIS_URL=redis://127.0.0.1:6379
+    ```bash
+    # ─── Network ──────────────────────────────────────────────
+    RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
 
-# ─── Server ────────────────────────────────────────────────
-PORT=4000
-```
+    # ─── Contracts ─────────────────────────────────────────────
+    VAULT_FACTORY_ADDRESS=0x...
+    KNOWN_VAULT_ADDRESSES=0xVault1,0xVault2   # comma-separated, optional
 
-### Indexer `apps/indexer/.env`
+    # ─── Redis ─────────────────────────────────────────────────
+    REDIS_URL=redis://127.0.0.1:6379
+    ```
+  </Tab>
+  <Tab title="Frontend">
+    Create `apps/frontend/.env.local`:
 
-```bash
-# ─── Network ──────────────────────────────────────────────
-RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
-
-# ─── Contracts ─────────────────────────────────────────────
-VAULT_FACTORY_ADDRESS=0x...
-KNOWN_VAULT_ADDRESSES=0xVault1,0xVault2   # comma-separated, optional
-
-# ─── Redis ─────────────────────────────────────────────────
-REDIS_URL=redis://127.0.0.1:6379
-```
-
-### Frontend `apps/frontend/.env.local`
-
-```bash
-NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
-NEXT_PUBLIC_CHAIN_ID=125
-NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
+    ```bash
+    NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+    NEXT_PUBLIC_CHAIN_ID=125
+    NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
+    NEXT_PUBLIC_API_URL=http://localhost:4000
+    ```
+  </Tab>
+</Tabs>
 
 ---
 
 ## Database Setup
 
-### 1. Create the database
-
-```bash
-createdb zibaxeer
-```
-
-### 2. Generate the Prisma client
-
-```bash
-cd packages/db
-pnpm prisma generate
-```
-
-### 3. Run migrations
-
-```bash
-pnpm prisma migrate dev --name init
-```
+<Steps>
+  <Step title="Create the database">
+    ```bash
+    createdb zibaxeer
+    ```
+  </Step>
+  <Step title="Generate the Prisma client">
+    ```bash
+    cd packages/db
+    pnpm prisma generate
+    ```
+  </Step>
+  <Step title="Run migrations">
+    ```bash
+    pnpm prisma migrate dev --name init
+    ```
+  </Step>
+</Steps>
 
 ---
 
@@ -126,37 +132,37 @@ pnpm prisma migrate dev --name init
 
 Open three separate terminals:
 
-### Terminal 1 — Backend API
+<Steps>
+  <Step title="Terminal 1 — Backend API">
+    ```bash
+    cd apps/backend
+    pnpm dev
+    ```
 
-```bash
-cd apps/backend
-pnpm dev
-```
+    Server starts at `http://localhost:4000`. Verify with:
 
-Server starts at `http://localhost:4000`. Verify with:
+    ```bash
+    curl http://localhost:4000/health
+    # → {"status":"ok","service":"Zibaxeer API Server"}
+    ```
+  </Step>
+  <Step title="Terminal 2 — Indexer">
+    ```bash
+    cd apps/indexer
+    pnpm dev
+    ```
 
-```bash
-curl http://localhost:4000/health
-# → {"status":"ok","service":"Zibaxeer API Server"}
-```
+    The indexer connects to HyperPaxeer RPC, begins watching the `VaultFactory` for `VaultDeployed` events, and listens to any vaults listed in `KNOWN_VAULT_ADDRESSES`.
+  </Step>
+  <Step title="Terminal 3 — Frontend">
+    ```bash
+    cd apps/frontend
+    pnpm dev
+    ```
 
-### Terminal 2 — Indexer
-
-```bash
-cd apps/indexer
-pnpm dev
-```
-
-The indexer connects to HyperPaxeer RPC, begins watching the `VaultFactory` for `VaultDeployed` events, and listens to any vaults listed in `KNOWN_VAULT_ADDRESSES`.
-
-### Terminal 3 — Frontend
-
-```bash
-cd apps/frontend
-pnpm dev
-```
-
-Dashboard available at `http://localhost:3000`.
+    Dashboard available at `http://localhost:3000`.
+  </Step>
+</Steps>
 
 ---
 
@@ -208,38 +214,40 @@ pnpm --filter @zibaxeer/indexer dev
 
 ## Troubleshooting
 
-### `pnpm install` fails on a package
+<AccordionGroup>
+  <Accordion title="`pnpm install` fails on a package">
+    Make sure you're on Node.js `>= 20` and pnpm `>= 8`:
 
-Make sure you're on Node.js `>= 20` and pnpm `>= 8`:
+    ```bash
+    node --version
+    pnpm --version
+    ```
+  </Accordion>
 
-```bash
-node --version
-pnpm --version
-```
+  <Accordion title="Prisma client not found">
+    Regenerate the client after any schema change:
 
-### Prisma client not found
+    ```bash
+    cd packages/db
+    pnpm prisma generate
+    ```
+  </Accordion>
 
-Regenerate the client after any schema change:
+  <Accordion title="Redis connection refused">
+    Ensure Redis is running:
 
-```bash
-cd packages/db
-pnpm prisma generate
-```
+    ```bash
+    # macOS / Linux
+    redis-server
 
-### Redis connection refused
+    # Windows (via WSL or Docker)
+    docker run -p 6379:6379 redis:7-alpine
+    ```
+  </Accordion>
 
-Ensure Redis is running:
-
-```bash
-# macOS / Linux
-redis-server
-
-# Windows (via WSL or Docker)
-docker run -p 6379:6379 redis:7-alpine
-```
-
-### Indexer not picking up events
-
-- Confirm `VAULT_FACTORY_ADDRESS` in `apps/indexer/.env` matches the deployed contract
-- Check the RPC endpoint is reachable
-- Verify `REDIS_URL` matches the backend's `REDIS_URL` (same Redis instance)
+  <Accordion title="Indexer not picking up events">
+    - Confirm `VAULT_FACTORY_ADDRESS` in `apps/indexer/.env` matches the deployed contract
+    - Check the RPC endpoint is reachable
+    - Verify `REDIS_URL` matches the backend's `REDIS_URL` (same Redis instance)
+  </Accordion>
+</AccordionGroup>

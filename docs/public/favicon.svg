@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hexGradF" x1="4" y1="2.5" x2="28" y2="29.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#DC2626"/>
+    </linearGradient>
+  </defs>
+  <!-- Hexagon -->
+  <path d="M16 2.5L28 9V23L16 29.5L4 23V9L16 2.5Z" fill="url(#hexGradF)"/>
+  <!-- Z lettermark -->
+  <path d="M9 11H23L9 21H23" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

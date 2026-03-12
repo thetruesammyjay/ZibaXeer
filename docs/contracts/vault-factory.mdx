@@ -1,6 +1,7 @@
 ---
 title: VaultFactory
 description: Deploys and registers CopyTradingVault proxies on HyperPaxeer
+icon: industry
 ---
 
 # VaultFactory
@@ -105,6 +106,10 @@ Updates the `VaultRegistry` and `RiskManager` references.
 ---
 
 ## Indexer Integration
+
+<Tip>
+  The indexer's `vaultFactory.listener.ts` starts listening to any new vault's events **immediately** after `VaultDeployed` fires — no manual registration needed.
+</Tip>
 
 The indexer's `vaultFactory.listener.ts` watches for `VaultDeployed` and triggers:
 

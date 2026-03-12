@@ -1,6 +1,7 @@
 ---
 title: ZibaXeer
 description: On-Chain Copy-Trading Vault Protocol on HyperPaxeer
+icon: house
 ---
 
 # ZibaXeer
@@ -9,7 +10,7 @@ description: On-Chain Copy-Trading Vault Protocol on HyperPaxeer
 
 ZibaXeer is a decentralized copy-trading vault protocol deployed on **HyperPaxeer** (EVM Chain ID `125`). It enables top-performing Colosseum traders to create strategy vaults that other funded wallets can mirror — transparently, non-custodially, and with configurable risk parameters.
 
-> Built natively on PaxDex. Powered by the Argus Risk Engine. Designed for the capital layer of Web3.
+<Note>Built natively on PaxDex. Powered by the Argus Risk Engine. Designed for the capital layer of Web3.</Note>
 
 ---
 
@@ -73,15 +74,32 @@ Indexer emits events → Backend records history → Dashboard updates
 
 ## Documentation
 
-| Section | Description |
-|---|---|
-| [Architecture](./architecture) | System diagrams and full data flow |
-| [Getting Started](./getting-started) | Installation, environment, and running locally |
-| [Network](./network) | HyperPaxeer chain configuration |
-| [Contracts — Overview](./contracts/overview) | All smart contracts at a glance |
-| [Backend — API Reference](./backend/api-reference) | REST endpoints and response shapes |
-| [Indexer](./indexer) | On-chain event indexer pipeline |
-| [Deployment](./deployment) | Deploy contracts, backend, and frontend |
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="./architecture">
+    System diagrams and full data flow across all protocol layers
+  </Card>
+  <Card title="Getting Started" icon="rocket" href="./getting-started">
+    Clone the repo, configure your environment, and run the full stack locally
+  </Card>
+  <Card title="Network" icon="network-wired" href="./network">
+    HyperPaxeer chain configuration, wallet setup, and Argus Oracle integration
+  </Card>
+  <Card title="Smart Contracts" icon="file-contract" href="./contracts/overview">
+    All ZibaXeer smart contracts with deploy order and UUPS upgrade pattern
+  </Card>
+  <Card title="Backend API" icon="code" href="./backend/api-reference">
+    Full REST API reference — vault, analytics, and leaderboard endpoints
+  </Card>
+  <Card title="Indexer" icon="bolt" href="./indexer">
+    On-chain event indexer and BullMQ queue pipeline documentation
+  </Card>
+  <Card title="Deployment" icon="cloud-arrow-up" href="./deployment">
+    Deploy contracts to HyperPaxeer, backend to Railway, frontend to Vercel
+  </Card>
+  <Card title="Workers" icon="gears" href="./backend/workers">
+    BullMQ background workers — trade, snapshot, vault, and follower processing
+  </Card>
+</CardGroup>
 
 ---
 

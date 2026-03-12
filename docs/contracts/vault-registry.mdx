@@ -1,6 +1,7 @@
 ---
 title: VaultRegistry
 description: On-chain central directory of all officially deployed ZibaXeer vaults
+icon: list-check
 ---
 
 # VaultRegistry
@@ -76,6 +77,10 @@ address[] memory vaults = registry.leaderToVaults(0xLeaderAddress);
 ---
 
 ## Security
+
+<Note>
+  The `onlyFactory` modifier prevents any external actor from registering arbitrary addresses as vaults. The `authorizedFactory` can only be updated by the contract owner (protocol DAO or multi-sig), making the registry tamper-proof under normal operation.
+</Note>
 
 The `onlyFactory` modifier prevents any external actor from registering arbitrary addresses as vaults:
 

@@ -1,6 +1,7 @@
 ---
 title: PaxDexAdapter
 description: Swap routing adapter abstracting PaxDex interactions for CopyTradingVault
+icon: rotate
 ---
 
 # PaxDexAdapter
@@ -75,6 +76,10 @@ Updates the router address — useful if PaxDex deploys a new router version.
 ---
 
 ## Integration with CopyTradingVault
+
+<Info>
+  The adapter acts as a **stateless, trusted bridge** — the vault never interacts with PaxDex directly. Future router migrations only require a single `setPaxDexRouter()` admin call with no changes to vault logic.
+</Info>
 
 ```solidity
 // Inside CopyTradingVault.executeGroupTrade()

@@ -1,6 +1,7 @@
 ---
 title: Contracts Overview
 description: All ZibaXeer smart contracts at a glance
+icon: file-contract
 ---
 
 # Smart Contracts Overview
@@ -11,20 +12,40 @@ All ZibaXeer contracts are written in Solidity `^0.8.20` and deployed on **Hyper
 
 ## Contract Registry
 
-| Contract | File | Upgradeable | Description |
-|---|---|---|---|
-| `VaultFactory` | `src/core/VaultFactory.sol` | ✅ UUPS | Deploys and registers new `CopyTradingVault` proxies |
-| `CopyTradingVault` | `src/core/CopyTradingVault.sol` | ✅ UUPS | Core vault — trade execution, follower management, PnL settlement |
-| `VaultRegistry` | `src/core/VaultRegistry.sol` | ✅ UUPS | Central on-chain directory of all deployed vaults |
-| `RiskManager` | `src/gov/RiskManager.sol` | ✅ UUPS | Enforces protocol risk constraints via Argus Oracle |
-| `RevenueSplitter` | `src/gov/RevenueSplitter.sol` | ✅ UUPS | Calculates and distributes realized PnL between parties |
-| `ArgusOracle` | `src/oracle/ArgusOracle.sol` | ✅ UUPS | On-chain bridge to the Argus reputation scoring engine |
-| `PaxDexAdapter` | `src/adapters/PaxDexAdapter.sol` | ❌ | Abstracts swap routing through PaxDex Router |
-| `ZibaXeerToken` | `src/core/ZibaXeerToken.sol` | ❌ | Protocol governance and utility token |
+<CardGroup cols={2}>
+  <Card title="VaultFactory" icon="industry" href="./vault-factory">
+    Deploys and registers new `CopyTradingVault` proxies. Entry point for all vault creation. **UUPS Upgradeable.**
+  </Card>
+  <Card title="CopyTradingVault" icon="vault" href="./copy-trading-vault">
+    Core vault — trade execution, follower management, and PnL settlement. **UUPS Upgradeable.**
+  </Card>
+  <Card title="VaultRegistry" icon="list-check" href="./vault-registry">
+    Central on-chain directory of all officially deployed vaults. **UUPS Upgradeable.**
+  </Card>
+  <Card title="RiskManager" icon="shield-halved" href="./risk-manager">
+    Enforces risk constraints and integrates Argus Oracle for reputation gating. **UUPS Upgradeable.**
+  </Card>
+  <Card title="RevenueSplitter" icon="chart-pie" href="./revenue-splitter">
+    Calculates and distributes realized PnL between followers, leaders, and the protocol. **UUPS Upgradeable.**
+  </Card>
+  <Card title="ArgusOracle" icon="eye" href="./risk-manager">
+    On-chain bridge to the Paxeer Argus reputation scoring engine. **UUPS Upgradeable.**
+  </Card>
+  <Card title="PaxDexAdapter" icon="rotate" href="./paxdex-adapter">
+    Abstracts swap routing through the PaxDex Router. Non-upgradeable.
+  </Card>
+  <Card title="ZibaXeerToken" icon="coins">
+    Protocol governance and utility token. Non-upgradeable.
+  </Card>
+</CardGroup>
 
 ---
 
 ## Upgrade Pattern
+
+<Warning>
+  All UUPS upgrades must go through a **multi-sig wallet** (e.g. Gnosis Safe) in production. Never call `upgradeToAndCall` directly from a single EOA.
+</Warning>
 
 All upgradeable contracts follow the UUPS pattern from OpenZeppelin:
 

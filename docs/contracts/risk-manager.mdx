@@ -1,6 +1,7 @@
 ---
 title: RiskManager
 description: Enforces protocol risk parameters and integrates Argus Oracle for reputation gating
+icon: shield-halved
 ---
 
 # RiskManager
@@ -107,4 +108,6 @@ The `ArgusOracle` is queried via:
 argusOracle.isEligible(address vaultLeader, uint256 minScore) returns (bool)
 ```
 
-The Argus engine scores leaders across 500+ on-chain behavioral signals — trade frequency, win rate, drawdown history, strategy consistency, and social signals from the Paxeer Colosseum. A score of `600/1000` is the minimum threshold for protocol participation.
+<Info>
+  The Argus engine scores leaders across **500+ on-chain behavioral signals** — trade frequency, win rate, drawdown history, strategy consistency, and social signals from the Paxeer Colosseum. A score of **600 / 1000** is the minimum threshold for protocol participation.
+</Info>
