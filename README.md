@@ -8,6 +8,14 @@ ZibaXeer is a decentralized copy-trading vault protocol deployed on **HyperPaxee
 
 ---
 
+## Documentation
+
+Full docs are available at **[sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app](https://sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app)**.
+
+Covers Getting Started, system architecture, backend API, smart contracts, and the indexer.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
