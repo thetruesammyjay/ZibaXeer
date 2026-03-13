@@ -639,7 +639,8 @@ This project is licensed under the **MIT License** — see the [LICENSE](./LICEN
 | Resource | URL |
 |---|---|
 | Paxeer Network | [hyperpaxeer.com](https://hyperpaxeer.com) |
-| Documentation | [docs.hyperpaxeer.com](https://docs.hyperpaxeer.com) |
+| Documentation (ZibaXeer) | [sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app](https://sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app/) |
+| Documentation (Paxeer) | [docs.hyperpaxeer.com](https://docs.hyperpaxeer.com) |
 | Block Explorer | [paxscan.paxeer.app](https://paxscan.paxeer.app) |
 | Colosseum | [colosseum.hyperpaxeer.com/dashboard](https://colosseum.hyperpaxeer.com/dashboard) |
 | Hackathon | [build.hyperpaxeer.com/hackathon](https://build.hyperpaxeer.com/hackathon) |
