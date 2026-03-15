@@ -21,7 +21,7 @@ export const snapshotWorker = new Worker('SnapshotCalculationQueue', async (job:
             const totalTrades = vault.trades.length;
             if (totalTrades === 0) continue; // Skip vaults with no execution history
 
-            const profitableTrades = vault.trades.filter(t => t.isProfit).length;
+            const profitableTrades = vault.trades.filter((t: any) => t.isProfit).length;
 
             // Calculate a very basic mock ROI directly correlated to win-rate and frequency
             // Real-world logic would recalculate based on the precise basis-points of `amountIn` Vs `amountOut`

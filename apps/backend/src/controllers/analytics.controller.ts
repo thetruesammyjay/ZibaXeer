@@ -16,7 +16,7 @@ export const getGlobalAnalytics = async (req: Request, res: Response) => {
         let totalTrades = 0;
         let profitableTrades = 0;
 
-        vaults.forEach(vault => {
+        vaults.forEach((vault: any) => {
             // Assuming TVL is stored as a string representation of wei/smallest unit
             try {
                 if (vault.tvl) totalTvl += BigInt(vault.tvl);
@@ -25,7 +25,7 @@ export const getGlobalAnalytics = async (req: Request, res: Response) => {
             }
 
             totalTrades += vault.trades.length;
-            profitableTrades += vault.trades.filter(t => t.isProfit).length;
+            profitableTrades += vault.trades.filter((t: any) => t.isProfit).length;
         });
 
         const winRate = totalTrades > 0 ? (profitableTrades / totalTrades) * 100 : 0;
@@ -69,7 +69,7 @@ export const getVaultAnalytics = async (req: Request, res: Response) => {
         }
 
         const totalTrades = vault.trades.length;
-        const profitableTrades = vault.trades.filter(t => t.isProfit).length;
+        const profitableTrades = vault.trades.filter((t: any) => t.isProfit).length;
         const winRate = totalTrades > 0 ? (profitableTrades / totalTrades) * 100 : 0;
 
         res.status(200).json({
