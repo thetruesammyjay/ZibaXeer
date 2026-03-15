@@ -24,6 +24,14 @@ export interface VaultData {
     };
 }
 
+function normalizeError(err: unknown): Error {
+    if (err instanceof Error) {
+        return err;
+    }
+
+    return new Error('Unknown error occurred');
+}
+
 export function useVaults() {
     const [vaults, setVaults] = useState<VaultData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,8 +49,8 @@ export function useVaults() {
                 } else {
                     throw new Error(json.message || 'Failed to fetch vaults');
                 }
-            } catch (err: any) {
-                setError(err);
+            } catch (err: unknown) {
+                setError(normalizeError(err));
             } finally {
                 setLoading(false);
             }
@@ -73,8 +81,8 @@ export function useVault(id: string) {
                 } else {
                     throw new Error(json.message || 'Failed to fetch vault details');
                 }
-            } catch (err: any) {
-                setError(err);
+            } catch (err: unknown) {
+                setError(normalizeError(err));
             } finally {
                 setLoading(false);
             }

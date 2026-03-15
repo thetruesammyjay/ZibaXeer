@@ -476,14 +476,22 @@ anvil --fork-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc --chain-id 125
 
 ```bash
 cd apps/backend
-pnpm dev
+# Run API server directly (no dev script is defined yet)
+pnpm exec tsx src/index.ts
 ```
 
 ### Start Frontend
 
 ```bash
 cd apps/frontend
-pnpm dev
+pnpm run dev
+```
+
+### Start Indexer (Optional)
+
+```bash
+cd apps/indexer
+pnpm run dev
 ```
 
 ---
@@ -510,16 +518,16 @@ forge coverage --report lcov
 
 ```bash
 cd apps/backend
-pnpm test
-pnpm test:e2e
+# No automated backend test script is configured yet
+# Use type-check/lint when scripts are added
 ```
 
 ### Frontend Tests
 
 ```bash
 cd apps/frontend
-pnpm test
-pnpm test:e2e
+# No test script is configured in apps/frontend/package.json
+pnpm run lint
 ```
 
 ---
@@ -536,8 +544,8 @@ forge script script/Deploy.s.sol \
   --verify
 
 # Verify on PaxScan
-forge verify-contract <CONTRACT_ADDRESS> src/VaultFactory.sol:VaultFactory \
-  --chain-id 125 \
+forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
+    --chain 125 \
   --etherscan-api-key $PAXSCAN_API_KEY
 ```
 
@@ -624,7 +632,7 @@ We welcome contributions from the community. Please read the following before su
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/vault-analytics`)
 3. **Commit** with conventional commits (`feat:`, `fix:`, `docs:`, `test:`)
-4. **Test** thoroughly (`forge test && pnpm test`)
+4. **Test** thoroughly (`cd contracts && forge test`; frontend currently supports `pnpm run lint`)
 5. **Submit** a Pull Request targeting `main`
 
 ### Code Standards

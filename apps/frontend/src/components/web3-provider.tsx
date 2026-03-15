@@ -1,9 +1,9 @@
 "use client"
 
 import { WagmiProvider, createConfig, http } from "wagmi"
-import { mainnet, sepolia } from "wagmi/chains"
+import { injected } from "wagmi/connectors"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ConnectKitProvider, getDefaultConfig } from "connectkit"
+import { ConnectKitProvider } from "connectkit"
 
 // Note: HyperPaxeer mainnet configuration will be added here
 const hyperPaxeer = {
@@ -18,27 +18,14 @@ const hyperPaxeer = {
     },
 } as const
 
-const config = createConfig(
-    getDefaultConfig({
-        // Your dApps chains
-        chains: [hyperPaxeer, mainnet, sepolia],
-        transports: {
-            // RPC URL for each chain
-            [hyperPaxeer.id]: http(hyperPaxeer.rpcUrls.default.http[0]),
-            [mainnet.id]: http(),
-            [sepolia.id]: http(),
-        },
-
-        // Required API Keys
-        walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo_project_id",
-
-        // Required App Info
-        appName: "ZibaXeer",
-        appDescription: "The On-Chain Copy-Trading Vaults.",
-        appUrl: "https://zibaxeer.io",
-        appIcon: "https://zibaxeer.io/logo.png",
-    }),
-)
+const config = createConfig({
+    chains: [hyperPaxeer],
+    connectors: [injected()],
+    transports: {
+        [hyperPaxeer.id]: http(hyperPaxeer.rpcUrls.default.http[0]),
+    },
+    ssr: true,
+})
 
 const queryClient = new QueryClient()
 

@@ -1,11 +1,19 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Logo } from "@/components/icons/logo"
 import { Button } from "@/components/ui/button"
-import { ConnectKitButton } from "connectkit"
 import { useAccount } from "wagmi"
+
+const ConnectKitButton = dynamic(
+    () => import("./connect-wallet-button").then((mod) => mod.ConnectWalletButton),
+    {
+        ssr: false,
+        loading: () => <Button variant="outline">Connect Wallet</Button>,
+    }
+)
 
 export function Header() {
     const pathname = usePathname()

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 export interface ButtonProps
@@ -28,7 +29,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             icon: "h-10 w-10",
         };
 
-        const Comp = "button";
+        const Comp = asChild ? Slot : "button";
         return (
             <Comp
                 className={cn(baseStyles, variants[variant], sizes[size], className)}

@@ -9,6 +9,14 @@ export interface GlobalAnalytics {
     winRate: number;
 }
 
+function normalizeError(err: unknown): Error {
+    if (err instanceof Error) {
+        return err;
+    }
+
+    return new Error('Unknown error occurred');
+}
+
 export function useGlobalAnalytics() {
     const [analytics, setAnalytics] = useState<GlobalAnalytics | null>(null);
     const [loading, setLoading] = useState(true);
@@ -26,8 +34,8 @@ export function useGlobalAnalytics() {
                 } else {
                     throw new Error(json.message || 'Failed to fetch analytics');
                 }
-            } catch (err: any) {
-                setError(err);
+            } catch (err: unknown) {
+                setError(normalizeError(err));
             } finally {
                 setLoading(false);
             }
