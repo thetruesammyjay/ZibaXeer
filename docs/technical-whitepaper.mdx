@@ -1,0 +1,79 @@
+---
+title: Technical Whitepaper
+description: One-page architecture and scalability whitepaper for ZibaXeer
+icon: file-text
+---
+
+# ZibaXeer Technical Whitepaper
+
+## Abstract
+
+ZibaXeer is an on-chain copy-trading protocol built for HyperPaxeer (EVM Chain ID 125). The system is designed to deliver transparent execution, non-custodial capital management, and performance-aligned incentives while sustaining high transaction throughput and low operational latency. Scalability is achieved through a layered architecture: deterministic on-chain settlement for critical state, asynchronous off-chain indexing for analytics, and queue-based background processing for compute-heavy aggregation.
+
+## System Goals
+
+1. Preserve trust-minimized execution for vault lifecycle, deposits, withdrawals, and profit splitting.
+2. Support growth in vault count, follower count, and trade frequency without degrading UX.
+3. Keep write-heavy analytics workloads off the critical transaction path.
+4. Provide modular upgrade paths for risk logic and protocol policy.
+
+## Architecture Summary
+
+ZibaXeer uses four coordinated layers:
+
+1. Smart contract layer (HyperPaxeer): VaultFactory, CopyTradingVault, RiskManager, RevenueSplitter, VaultRegistry, and adapters.
+2. Event ingestion layer: an indexer that subscribes to contract events and turns chain activity into durable jobs.
+3. Processing layer: BullMQ workers that materialize trades, snapshots, and follower state into PostgreSQL.
+4. Delivery layer: backend APIs and frontend dashboard for user-facing analytics and control surfaces.
+
+This separation prevents analytics and presentation concerns from blocking execution-critical contract flows.
+
+## Core Scalability Decisions
+
+### 1) Event-driven data plane
+
+On-chain contracts emit canonical events (vault deployed, trade executed, follower subscribed/unsubscribed). The indexer consumes events and enqueues jobs rather than writing directly to all downstream stores. This introduces buffering and backpressure control, allowing the system to absorb bursts of chain activity.
+
+### 2) Queue-based asynchronous processing
+
+BullMQ workers isolate expensive tasks such as snapshot recalculation and leaderboard updates. Work is retried with bounded attempts and backoff, reducing failure amplification during transient RPC or database disruptions.
+
+### 3) Read/write separation
+
+Execution-critical writes remain on-chain. Analytical reads are served from PostgreSQL materializations. This avoids repeated full-chain scans for dashboard queries and keeps API latency stable as historical data volume grows.
+
+### 4) Horizontal scaling model
+
+The indexer can be partitioned by event domain, and workers can scale by queue type and concurrency. Backend API replicas scale independently from indexer/worker throughput, enabling cost-effective autoscaling per subsystem bottleneck.
+
+### 5) Modular contract composition
+
+Risk checks, revenue splitting, and vault deployment are decomposed into dedicated contracts. This reduces blast radius of changes and enables targeted upgrades (via UUPS governance paths) without redeploying the entire protocol surface.
+
+## Data Consistency and Reliability
+
+1. Chain is the source of truth for financial state transitions.
+2. Event processing is at-least-once; idempotent persistence keys (transaction hash, vault address, event semantics) prevent duplicate side effects.
+3. Queue decoupling prevents temporary downstream failures from causing data loss.
+4. Health endpoints and process supervision support fast operational detection and recovery.
+
+## Performance and Capacity Considerations
+
+The architecture is designed to scale along three axes:
+
+1. Vault growth: additional vaults add event volume, handled through parallel listeners and queue workers.
+2. Follower growth: subscription events and snapshot jobs scale through worker concurrency and database indexing.
+3. Trade frequency growth: bursty trade streams are smoothed by queue buffering and retriable consumers.
+
+The practical throughput ceiling is determined by RPC responsiveness, Redis queue throughput, and PostgreSQL write efficiency rather than frontend rendering limits.
+
+## Security and Risk Posture
+
+1. Non-custodial user model with contract-mediated flows.
+2. Explicit risk-gating before trade execution through RiskManager and oracle-backed eligibility checks.
+3. Upgradeability with governance controls for iterative hardening.
+4. Circuit-breaker patterns to limit cascading losses during anomalous conditions.
+
+## Conclusion
+
+ZibaXeer prioritizes scalable utility by combining verifiable on-chain execution with asynchronous off-chain computation. The protocol can grow in users and activity without sacrificing transparency, because consensus-critical logic remains on-chain while analytics and aggregation scale horizontally off-chain. This architecture is intended to support sustained, organic usage on HyperPaxeer and aligns with proof-of-utility evaluation criteria.
