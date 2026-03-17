@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <rect x="15" y="15" width="70" height="70" rx="16" fill="#fdeded" />
+
+  <polygon points="28,36 72,36 50,50" fill="#ff9e9e" />
+  
+  <polygon points="28,64 72,64 50,50" fill="#f71e2c" />
+  
+  <polygon points="28,36 28,64 50,50" fill="#fc7979" />
+  
+  <polygon points="72,36 72,64 50,50" fill="#fc7979" />
+
+  <text x="105" y="61" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="34" fill="#050505" letter-spacing="-0.5">ZibaXeer</text>
+</svg>

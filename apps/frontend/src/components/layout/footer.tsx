@@ -12,13 +12,13 @@ export function Footer() {
                     </p>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <Link href="#" className="hover:text-foreground">
+                    <Link href="https://x.com/Ziba_Xeer" className="hover:text-foreground">
                         Twitter
                     </Link>
-                    <Link href="#" className="hover:text-foreground">
+                    <Link href="https://github.com/ZibaXeer" className="hover:text-foreground">
                         GitHub
                     </Link>
-                    <Link href="#" className="hover:text-foreground">
+                    <Link href="https://discord.gg/ZibaXeer" className="hover:text-foreground">
                         Discord
                     </Link>
                 </div>
