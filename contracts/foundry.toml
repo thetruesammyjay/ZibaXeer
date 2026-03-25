@@ -7,7 +7,7 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-hyperpaxeer = "https://mainnet-beta.rpc.hyperpaxeer.com/rpc"
+hyperpaxeer = "https://public-mainnet.rpcpaxeer.online/evm"
 
 # PaxScan verification — get your API key from https://paxscan.paxeer.app/register
 [etherscan]

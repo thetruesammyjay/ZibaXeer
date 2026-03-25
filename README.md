@@ -82,16 +82,16 @@ Paxeer's funded wallet model (starting at $50,000 USDL) provides immediate liqui
 ```mermaid
 graph TB
     subgraph Clients["Client Layer"]
-        WEB[Web Dashboard<br/>React 19 / Next.js]
-        WC[ConnectKit + Wagmi<br/>Wallet Connection]
+        WEB[Web Dashboard - React 19 / Next.js]
+        WC[ConnectKit + Wagmi - Wallet Connection]
     end
 
     subgraph Protocol["ZibaXeer Protocol Layer"]
-        VF[Vault Factory<br/>UUPS Proxy]
-        VR[Vault Registry<br/>UUPS Proxy]
-        SE[Strategy Engine<br/>CopyTradingVault Proxy]
-        RM[Risk Manager<br/>UUPS Proxy]
-        RS[Revenue Splitter<br/>UUPS Proxy]
+        VF[Vault Factory - UUPS Proxy]
+        VR[Vault Registry - UUPS Proxy]
+        SE[Strategy Engine - CopyTradingVault Proxy]
+        RM[Risk Manager - UUPS Proxy]
+        RS[Revenue Splitter - UUPS Proxy]
     end
 
     subgraph Execution["Execution Layer"]
@@ -103,7 +103,7 @@ graph TB
     subgraph Infrastructure["Paxeer Infrastructure"]
         AE[Argus Risk Engine]
         FW[Funded Wallets]
-        HP[HyperPaxeer Chain<br/>EVM Chain ID 125]
+        HP[HyperPaxeer Chain - EVM Chain ID 125]
     end
 
     WEB --> WC
@@ -149,7 +149,7 @@ sequenceDiagram
         end
     end
 
-    Note over Vault,Follower: Revenue split calculated<br/>on realized PnL only
+    Note over Vault,Follower: Revenue split calculated on realized PnL only
 ```
 
 ### Revenue Distribution Model
@@ -210,21 +210,21 @@ flowchart LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending: Leader submits<br/>vault creation tx
+    [*] --> Pending: Leader submits vault creation tx
 
-    Pending --> Active: Argus verification<br/>passed
+    Pending --> Active: Argus verification passed
 
-    Active --> Paused: Leader pauses /<br/>circuit breaker
+    Active --> Paused: Leader pauses / circuit breaker
 
-    Paused --> Active: Leader resumes /<br/>conditions cleared
+    Paused --> Active: Leader resumes / conditions cleared
 
-    Active --> Closing: Leader initiates<br/>wind-down
+    Active --> Closing: Leader initiates wind-down
 
-    Closing --> Settled: All positions<br/>closed + PnL settled
+    Closing --> Settled: All positions closed + PnL settled
 
-    Settled --> [*]: Funds returned<br/>to followers
+    Settled --> [*]: Funds returned to followers
 
-    Pending --> Rejected: Argus verification<br/>failed
+    Pending --> Rejected: Argus verification failed
     Rejected --> [*]
 ```
 
@@ -234,7 +234,7 @@ stateDiagram-v2
 flowchart TD
     A[Connect Funded Wallet] --> B{Wallet Tier Check}
     B -->|Tier Met| C[Browse Vault Marketplace]
-    B -->|Tier Not Met| D[Upgrade via Argus<br/>Performance]
+    B -->|Tier Not Met| D[Upgrade via Argus Performance]
 
     C --> E[Select Vault]
     E --> F[Configure Parameters]
@@ -247,9 +247,9 @@ flowchart TD
     F3 --> G
 
     G --> H[Subscription Active]
-    H --> I[Trades Mirrored<br/>Automatically]
+    H --> I[Trades Mirrored Automatically]
     I --> J{Performance Review}
-    J -->|Profitable| K[Revenue Split<br/>Distributed]
+    J -->|Profitable| K[Revenue Split Distributed]
     J -->|Drawdown| L{Stop-Loss Hit?}
     L -->|Yes| M[Auto-Exit Position]
     L -->|No| I
@@ -376,7 +376,7 @@ classDiagram
 | Component | Technology |
 |---|---|
 | Chain | HyperPaxeer (EVM Chain ID `125`) |
-| RPC | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
+| RPC | `https://public-mainnet.rpcpaxeer.online/evm` |
 | Explorer | [PaxScan](https://paxscan.paxeer.app) |
 | CI/CD | GitHub Actions |
 | Deployment | Vercel (frontend) + Railway (backend) |
@@ -394,7 +394,7 @@ Currency Symbol:    PAX
 Base Denom:         ahpx
 Display Denom:      hpx
 Bech32 Prefix:      pax
-RPC URL:            https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+RPC URL:            https://public-mainnet.rpcpaxeer.online/evm
 Block Explorer:     https://paxscan.paxeer.app
 Block Time:         ~2 seconds
 Consensus:          CometBFT
@@ -405,7 +405,7 @@ Consensus:          CometBFT
 | Field | Value |
 |---|---|
 | Network Name | HyperPaxeer Mainnet |
-| RPC URL | `https://mainnet-beta.rpc.hyperpaxeer.com/rpc` |
+| RPC URL | `https://public-mainnet.rpcpaxeer.online/evm` |
 | Chain ID | `125` |
 | Currency Symbol | `PAX` |
 | Explorer URL | `https://paxscan.paxeer.app` |
@@ -443,7 +443,7 @@ cp .env.example .env
 
 ```bash
 # Network
-HYPERPAXEER_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+HYPERPAXEER_RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
 CHAIN_ID=125
 
 # Deployer
@@ -459,7 +459,7 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/zibaxeer
 REDIS_URL=redis://localhost:6379
 
 # Frontend
-NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+NEXT_PUBLIC_RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
 NEXT_PUBLIC_CHAIN_ID=125
 NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
 ```
@@ -482,7 +482,7 @@ node compile.js
 
 ```bash
 # Fork HyperPaxeer mainnet locally
-anvil --fork-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc --chain-id 125
+anvil --fork-url https://public-mainnet.rpcpaxeer.online/evm --chain-id 125
 ```
 
 ### Start Backend
@@ -552,7 +552,7 @@ pnpm run lint
 ```bash
 # Deploy core contracts
 forge script script/Deploy.s.sol \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
   --broadcast \
   --verify
 

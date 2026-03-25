@@ -50,7 +50,7 @@ This guide walks you through cloning the repo, installing dependencies, configur
 
     ```bash
     # ─── Network ──────────────────────────────────────────────
-    HYPERPAXEER_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+    HYPERPAXEER_RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
     CHAIN_ID=125
 
     # ─── Deployer ──────────────────────────────────────────────
@@ -81,7 +81,7 @@ This guide walks you through cloning the repo, installing dependencies, configur
 
     ```bash
     # ─── Network ──────────────────────────────────────────────
-    RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+    RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
 
     # ─── Contracts ─────────────────────────────────────────────
     VAULT_FACTORY_ADDRESS=0x...
@@ -95,7 +95,7 @@ This guide walks you through cloning the repo, installing dependencies, configur
     Create `apps/frontend/.env.local`:
 
     ```bash
-    NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+    NEXT_PUBLIC_RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
     NEXT_PUBLIC_CHAIN_ID=125
     NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
     NEXT_PUBLIC_API_URL=http://localhost:4000
@@ -195,7 +195,7 @@ forge coverage --report lcov
 
 ```bash
 # Fork HyperPaxeer mainnet locally on port 8545
-anvil --fork-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc --chain-id 125
+anvil --fork-url https://public-mainnet.rpcpaxeer.online/evm --chain-id 125
 ```
 
 ---

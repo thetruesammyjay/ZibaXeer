@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RPC_URL = process.env.HYPERPAXEER_RPC_URL || 'https://mainnet-beta.rpc.hyperpaxeer.com/rpc';
+const RPC_URL = process.env.HYPERPAXEER_RPC_URL || 'https://public-mainnet.rpcpaxeer.online/evm';
 const VAULT_FACTORY_ADDRESS = process.env.VAULT_FACTORY_ADDRESS || '0x0000000000000000000000000000000000000000';
 
 export const provider = new ethers.JsonRpcProvider(RPC_URL);

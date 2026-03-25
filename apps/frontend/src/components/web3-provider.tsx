@@ -11,7 +11,7 @@ const hyperPaxeer = {
     name: "HyperPaxeer",
     nativeCurrency: { name: "Paxeer", symbol: "PAX", decimals: 18 },
     rpcUrls: {
-        default: { http: ["https://mainnet-beta.rpc.hyperpaxeer.com/rpc"] },
+        default: { http: ["https://public-mainnet.rpcpaxeer.online/evm"] },
     },
     blockExplorers: {
         default: { name: "PaxScan", url: "https://paxscan.paxeer.app" },

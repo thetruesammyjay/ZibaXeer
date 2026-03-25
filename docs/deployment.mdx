@@ -25,7 +25,7 @@ cd contracts
 
 # Deploy all contracts via the deployment script
 forge script script/Deploy.s.sol \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
   --private-key $DEPLOYER_PRIVATE_KEY \
   --broadcast \
   --verify
@@ -37,7 +37,7 @@ forge script script/Deploy.s.sol \
 forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
   --chain-id 125 \
   --etherscan-api-key $PAXSCAN_API_KEY \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm
 ```
 
 ### Deployment Order
@@ -77,7 +77,7 @@ Deploy contracts in this order to satisfy dependencies:
 ```bash
 # Set the authorized factory on the registry
 cast send $VAULT_REGISTRY_ADDRESS "setAuthorizedFactory(address)" $VAULT_FACTORY_ADDRESS \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
   --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
@@ -132,7 +132,7 @@ pnpm start
 Required environment variables:
 
 ```bash
-RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
 VAULT_FACTORY_ADDRESS=0x...      # Deployed VaultFactory address
 KNOWN_VAULT_ADDRESSES=0x...,...  # Any vaults deployed before this indexer run
 REDIS_URL=redis://...            # Same Redis as backend
@@ -154,7 +154,7 @@ Or connect via the Vercel dashboard → Import Git Repository → set root direc
 Set environment variables in the Vercel dashboard:
 
 ```bash
-NEXT_PUBLIC_RPC_URL=https://mainnet-beta.rpc.hyperpaxeer.com/rpc
+NEXT_PUBLIC_RPC_URL=https://public-mainnet.rpcpaxeer.online/evm
 NEXT_PUBLIC_CHAIN_ID=125
 NEXT_PUBLIC_EXPLORER_URL=https://paxscan.paxeer.app
 NEXT_PUBLIC_API_URL=https://api.zibaxeer.io
@@ -185,14 +185,14 @@ All core contracts use UUPS — upgrades go through a governance tx:
 ```bash
 # Deploy new implementation
 forge script script/Upgrade.s.sol \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
   --broadcast
 
 # Call upgradeToAndCall on the proxy
 cast send $PROXY_ADDRESS "upgradeToAndCall(address,bytes)" \
   $NEW_IMPLEMENTATION_ADDRESS \
   0x \
-  --rpc-url https://mainnet-beta.rpc.hyperpaxeer.com/rpc \
+  --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
   --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
