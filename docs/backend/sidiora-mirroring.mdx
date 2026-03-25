@@ -1,0 +1,174 @@
+---
+title: Sidiora Mirroring Spec
+description: Draft risk policy and indexer-backend contract for Sidiora off-chain trade mirroring
+icon: shield-check
+---
+
+# Sidiora Mirroring Spec
+
+This page defines the Phase 1 draft contract between the indexer and backend for Sidiora perpetual trade mirroring, plus the mandatory risk policy enforced by the mirror bot.
+
+<Warning>
+  Sidiora execution is off-chain first and on-chain settled. This means ZibaXeer must enforce risk controls in off-chain services and treat bot behavior as part of the trusted computing base.
+</Warning>
+
+---
+
+## Scope
+
+Phase 1 covers:
+
+- Delegation-based execution via `SidioraVaultAdapter`.
+- Off-chain mirror orchestration in indexer and backend workers.
+- Risk policy enforcement before signing or forwarding follower orders.
+- Audit logs and failure handling.
+
+Phase 1 does not include:
+
+- On-chain realized PnL fee splitting from Sidiora internal ledger.
+- Fully trustless per-trade settlement proofs.
+
+---
+
+## Trust Model
+
+### Roles
+
+| Role | Trust Level | Capabilities | Hard Constraint |
+|---|---|---|---|
+| Vault Owner (on-chain) | High | Configure adapter, rotate/revoke mirror delegate | Cannot bypass `onlyOwner` controls |
+| Mirror Bot (off-chain signer) | Medium | Submit mirrored orders to Sidiora sequencer | Must never receive withdrawal permission |
+| Indexer | Medium | Ingest leader intents/events and enqueue mirror jobs | Cannot directly move vault funds |
+| Backend Workers | Medium | Run risk checks and create signed follower intents | Must pass policy validation gate |
+| Sidiora Sequencer | External | Match orders and batch settlement | Treated as external dependency/failure domain |
+
+### Security Invariants
+
+- Delegate permissions must always be: `canTrade=true`, `canWithdraw=false`, `canModifyMargin=true`.
+- Any mirror bot key compromise must be containable via on-chain `revokeMirrorBot`.
+- Margin deposits and withdrawals remain owner-gated on adapter.
+- No off-chain component can withdraw vault funds through Sidiora delegation.
+
+---
+
+## Risk Policy (Mandatory)
+
+Every follower mirror order must pass all checks before submission.
+
+| Policy Key | Description | Example Default | Action on Violation |
+|---|---|---|---|
+| `maxLeverage` | Maximum effective leverage per follower account | `10x` in beta | Reject order |
+| `maxNotionalPerMarket` | Cap notional exposure per market | `20%` of follower equity | Reject order |
+| `maxPortfolioNotional` | Cap total open notional across all markets | `60%` of follower equity | Reject order |
+| `maxSlippageBps` | Max allowed slippage from leader reference quote | `75` bps | Reject order |
+| `maxOrderSkewBps` | Max proportional size drift from leader ratio | `30` bps | Reject order |
+| `minHealthFactor` | Minimum account health after simulated fill | `1.20` | Reject order |
+| `cooldownSeconds` | Minimum time between mirrored entries per follower+market | `15` sec | Delay/reject |
+| `dailyLossLimitBps` | Max daily realized+unrealized loss | `500` bps | Freeze follower mirroring |
+
+### Policy Evaluation Order
+
+1. Authenticate leader signal source.
+2. Validate strategy and follower subscription state.
+3. Simulate post-trade state using latest mark/maintenance values.
+4. Apply hard-risk checks (leverage, notional, health).
+5. Apply execution checks (slippage, skew, cooldown).
+6. Sign and enqueue only if all checks pass.
+
+---
+
+## Indexer to Backend Contract
+
+ZibaXeer uses queue-based integration rather than direct synchronous HTTP.
+
+### Queue Names
+
+| Queue | Producer | Consumer | Purpose |
+|---|---|---|---|
+| `SidioraMirrorSignalQueue` | Indexer | Mirror worker | Leader signal intake |
+| `SidioraMirrorResultQueue` | Mirror worker | Analytics/ops worker | Delivery status + errors |
+| `SidioraRiskAlertQueue` | Mirror worker | Ops/monitoring worker | Breach and freeze notifications |
+
+### Message: Leader Mirror Signal (v1)
+
+```json
+{
+  "version": "1.0",
+  "eventType": "LEADER_SIGNAL_RECEIVED",
+  "traceId": "uuid",
+  "leaderAddress": "0x...",
+  "vaultAddress": "0x...",
+  "sidioraMarket": "BTC-PERP",
+  "side": "LONG",
+  "orderType": "MARKET",
+  "leaderSize": "125000000",
+  "leaderPrice": "64000000000",
+  "leaderLeverage": "5000000000000000000",
+  "timestamp": 1774451900,
+  "source": "sidiora-sequencer"
+}
+```
+
+### Message: Mirror Execution Result (v1)
+
+```json
+{
+  "version": "1.0",
+  "eventType": "MIRROR_EXECUTION_RESULT",
+  "traceId": "uuid",
+  "vaultAddress": "0x...",
+  "leaderAddress": "0x...",
+  "followerAddress": "0x...",
+  "sidioraAccount": "0x...",
+  "status": "ACCEPTED",
+  "reason": null,
+  "riskSnapshot": {
+    "effectiveLeverage": "4.2",
+    "healthFactor": "1.56",
+    "portfolioNotionalRatio": "0.41"
+  },
+  "sequencerRequestId": "sidiora-req-id",
+  "timestamp": 1774451902
+}
+```
+
+### Retry and Idempotency Rules
+
+- `traceId` is globally unique per leader signal and used as idempotency key.
+- Consumers must treat duplicate `traceId` as no-op after first successful persistence.
+- Retry on transient failures (network, timeout, 429/5xx) with exponential backoff.
+- Do not retry policy failures (`status=REJECTED_POLICY`).
+
+---
+
+## Control Plane API (Backend)
+
+These endpoints are the operator-facing control surface.
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/sidiora/policy` | `GET` | Retrieve active policy values and version |
+| `/api/sidiora/policy` | `PUT` | Update policy values (admin only) |
+| `/api/sidiora/mirroring/status` | `GET` | Service health, queue lag, and sequencer reachability |
+| `/api/sidiora/mirroring/freeze/:vault` | `POST` | Emergency freeze mirroring for a vault |
+| `/api/sidiora/mirroring/unfreeze/:vault` | `POST` | Resume mirroring for a vault |
+
+---
+
+## Failure Modes and Playbooks
+
+| Failure Mode | Detection | Immediate Action | Recovery |
+|---|---|---|---|
+| Sequencer unavailable | Timeout/error-rate alarms | Pause new submissions, keep consuming signals into dead-letter queue | Auto-resume after health checks pass |
+| Mirror bot key compromise | Abnormal signing patterns / key exposure | Call `revokeMirrorBot` on affected adapters | Rotate key and `rotateMirrorBot` |
+| Risk engine drift | Divergence between expected vs actual exposure | Trigger vault freeze endpoint and emit risk alerts | Reconcile state and replay safe signals |
+| Queue backlog spike | Queue lag SLO breached | Activate backpressure and lower intake rate | Horizontal scale workers and drain queue |
+| Partial follower execution | Result mismatch for subset of followers | Mark failed followers for retry window | Retry where safe, otherwise close exposure |
+
+---
+
+## Audit Requirements
+
+- Persist leader signal, normalized follower order, risk decision, and sequencer response per `traceId`.
+- Emit immutable audit events for policy updates and freeze/unfreeze operations.
+- Keep a deterministic decision log for every rejected order.

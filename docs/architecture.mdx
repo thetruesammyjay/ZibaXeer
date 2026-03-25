@@ -206,6 +206,39 @@ The indexer produces to four named BullMQ queues. The backend workers consume th
 
 ---
 
+## Sidiora Perpetuals Trust Model
+
+Sidiora integration introduces an intentional split of responsibility between on-chain controls and off-chain execution.
+
+| Layer | Responsibility | Trust Boundary |
+|---|---|---|
+| On-chain adapter (`SidioraVaultAdapter`) | Margin movement and delegate management | Enforced by Solidity access control |
+| Indexer + mirror workers | Signal handling, risk checks, and order forwarding | Trusted service boundary |
+| Sidiora sequencer | Order matching and batch settlement | External dependency boundary |
+
+Non-negotiable constraints:
+
+- Mirror delegation must never include withdrawal permission.
+- Delegate compromise must be recoverable by on-chain revoke/rotate flows.
+- Risk checks must execute before any follower order is signed.
+
+See the detailed spec in [backend/sidiora-mirroring](backend/sidiora-mirroring).
+
+---
+
+## Sidiora Failure Domains
+
+| Domain | Example Failure | Mitigation |
+|---|---|---|
+| Sequencer dependency | Sequencer API outage | Queue buffering, backoff, temporary freeze |
+| Mirror bot operations | Signing key compromise | On-chain delegate revoke + key rotation |
+| Risk policy enforcement | Incorrect sizing across followers | Hard policy gate + freeze endpoint |
+| Event pipeline | Queue lag and delayed mirrors | Backpressure + autoscaling workers |
+
+Failure handling runbooks and message schemas are defined in [backend/sidiora-mirroring](backend/sidiora-mirroring).
+
+---
+
 ## Vault Lifecycle
 
 ```mermaid

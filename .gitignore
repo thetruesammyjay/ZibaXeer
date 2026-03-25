@@ -65,3 +65,17 @@ apps/backend/prisma/dev.db
 
 # logs
 apps/backend/logs/
+
+# local external protocol workspace
+sidiora-perps/
+
+# common build outputs
+dist/
+*.d.ts.map
+*.js.map
+
+# indexer transpile artifacts accidentally emitted into source tree
+apps/indexer/src/**/*.js
+apps/indexer/src/**/*.d.ts
+apps/indexer/src/**/*.js.map
+apps/indexer/src/**/*.d.ts.map

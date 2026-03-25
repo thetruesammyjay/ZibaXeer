@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { listenToVaultFactory } from './listeners/vaultFactory.listener.js';
 import { listenToVault } from './listeners/vault.listener.js';
+import { startSidioraSignalBridge } from './listeners/sidiora.listener.js';
 
 const KNOWN_VAULT_ADDRESSES = (process.env.KNOWN_VAULT_ADDRESSES ?? '')
     .split(',')
@@ -15,6 +16,9 @@ async function main() {
 
     // Watch VaultFactory for new vault deployments
     await listenToVaultFactory();
+
+    // Start Sidiora leader-signal bridge (bootstrap/env-driven in Phase 1)
+    await startSidioraSignalBridge();
 
     // Bootstrap any vaults already deployed before this process started
     if (KNOWN_VAULT_ADDRESSES.length > 0) {

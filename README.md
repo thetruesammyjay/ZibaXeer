@@ -19,6 +19,7 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 ## Table of Contents
 
 - [Frontend Snapshots](#frontend-snapshots)
+- [Current Status](#current-status)
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Core Features](#core-features)
@@ -46,6 +47,27 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 ### Mobile
 
 ![ZibaXeer Mobile Snapshot](./ZibaXeer-mobile.jpeg)
+
+---
+
+## Current Status
+
+As of March 2026, the repository includes a working baseline for both on-chain spot vault flows and Phase 1 Sidiora perpetual mirroring infrastructure.
+
+Implemented now:
+
+- Core copy-trading contracts, backend API, and indexer pipeline are operational.
+- `SidioraVaultAdapter` includes delegation rotation/revoke, safety checks, and event emissions.
+- Foundry tests for Sidiora adapter delegation and margin flows are passing.
+- Backend and indexer include Sidiora queue plumbing and worker stubs for mirror intake.
+- Control-plane Sidiora endpoints are available for policy, status, freeze, and unfreeze.
+- Durable `traceId` decision audit logging is implemented in PostgreSQL for real-money operational traceability.
+
+In progress / next-phase work:
+
+- Full Sidiora sequencer integration beyond bootstrap/stub signal bridge.
+- Production policy tuning, alerting hardening, and deeper replay tooling.
+- Expanded automated tests for backend/indexer Sidiora workflows.
 
 ---
 
@@ -337,6 +359,26 @@ classDiagram
 | `PaxDexAdapter.sol` | Interface adapter for PaxDex swap routing | No |
 | `ZibaXeerToken.sol` | Protocol governance and utility token | No |
 
+### Sidiora Perpetuals Integration (Phase 1)
+
+ZibaXeer supports a delegation-based Sidiora integration path for off-chain order-book perpetuals.
+
+What is implemented now:
+
+- `SidioraVaultAdapter` for owner-gated margin deposit/withdraw.
+- Mirror bot delegation with trade enabled and withdraw disabled.
+- Delegate lifecycle controls: authorize, revoke, rotate, and mirror bot address update.
+- Hardening checks for zero-address inputs, invalid amounts, invalid expiry, and safe ERC-20 transfers.
+- Foundry tests validating delegation, deposit flow, withdraw flow, and owner-only controls.
+- Backend/indexer queue contract for Sidiora mirroring (`SidioraMirrorSignalQueue`, result queue, risk alert queue).
+- Mirror worker policy gate with `traceId` idempotency and duplicate handling.
+- Control-plane API stubs for policy and freeze operations.
+- PostgreSQL-backed `traceId` decision persistence for audit and incident response.
+
+Critical trust assumption:
+
+- Sidiora matching is off-chain, so mirror execution requires trusted off-chain services (indexer + mirror workers) with strict risk-policy enforcement.
+
 ---
 
 ## Tech Stack
@@ -489,8 +531,7 @@ anvil --fork-url https://public-mainnet.rpcpaxeer.online/evm --chain-id 125
 
 ```bash
 cd apps/backend
-# Run API server directly (no dev script is defined yet)
-pnpm exec tsx src/index.ts
+pnpm run dev
 ```
 
 ### Start Frontend
@@ -505,6 +546,13 @@ pnpm run dev
 ```bash
 cd apps/indexer
 pnpm run dev
+```
+
+### Build Backend and Indexer
+
+```bash
+pnpm --filter backend build
+pnpm --filter indexer build
 ```
 
 ---
@@ -531,8 +579,14 @@ forge coverage --report lcov
 
 ```bash
 cd apps/backend
-# No automated backend test script is configured yet
-# Use type-check/lint when scripts are added
+pnpm run build
+```
+
+### Indexer Validation
+
+```bash
+cd apps/indexer
+pnpm run build
 ```
 
 ### Frontend Tests
@@ -591,11 +645,14 @@ railway up
 ### Security Measures
 
 - **UUPS Proxy Pattern** — Contracts are upgradeable with time-locked governance
-- **Role-Based Access Control** — OpenZeppelin AccessControl for admin functions
+- **Owner-Gated Adapter Controls** — Sidiora delegate and margin functions are restricted to vault owner
 - **Reentrancy Guards** — All state-changing functions protected
 - **Circuit Breakers** — Automated vault freezing on anomalous activity
 - **Multi-Sig Governance** — Protocol upgrades require DAO multi-sig approval
 - **Rate Limiting** — Trade mirroring bounded by per-block execution limits
+- **Mirror Delegate Restrictions** — Mirror bot delegation disallows withdrawal permissions
+- **Idempotent Mirroring** — `traceId`-based duplicate suppression in mirror worker
+- **Durable Audit Trail** — PostgreSQL persistence of mirror decisions for reconciliation and forensics
 
 ### Responsible Disclosure
 

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import vaultRoutes from './routes/vault.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
+import sidioraRoutes from './routes/sidiora.routes';
 import './workers/index';
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/vaults', vaultRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/sidiora', sidioraRoutes);
 
 // Health check Endpoint
 app.get('/health', (req, res) => {

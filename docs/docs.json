@@ -55,7 +55,8 @@
             "pages": [
               "backend/overview",
               "backend/api-reference",
-              "backend/workers"
+              "backend/workers",
+              "backend/sidiora-mirroring"
             ]
           },
           {

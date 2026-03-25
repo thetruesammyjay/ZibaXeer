@@ -73,6 +73,28 @@ model Trade {
   executedAt       DateTime @default(now())
 }
 
+// Durable audit log for Sidiora mirror decisions keyed by traceId.
+model SidioraMirrorDecision {
+  traceId            String   @id @map("trace_id")
+  status             String
+  reason             String?
+  policyVersion      String   @map("policy_version")
+  vaultAddress       String   @map("vault_address")
+  leaderAddress      String   @map("leader_address")
+  followerAddress    String?  @map("follower_address")
+  sidioraAccount     String?  @map("sidiora_account")
+  sequencerRequestId String?  @map("sequencer_request_id")
+  signalPayload      String   @map("signal_payload")
+  riskSnapshot       String   @map("risk_snapshot")
+  decisionTimestamp  DateTime @map("decision_timestamp")
+  duplicateCount     Int      @default(0) @map("duplicate_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  lastSeenAt         DateTime @default(now()) @map("last_seen_at")
+
+  @@map("sidiora_mirror_decisions")
+}
+
 enum VaultStatus {
   ACTIVE
   PAUSED
