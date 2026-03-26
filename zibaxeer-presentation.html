@@ -409,6 +409,7 @@
 				<span class="pill"><span class="dot" style="background:var(--green);"></span>Argus Risk Engine</span>
 				<span class="pill"><span class="dot" style="background:var(--blue);"></span>PaxDex Integration</span>
 				<span class="pill"><span class="dot" style="background:var(--gold);"></span>Revenue Splitter</span>
+				<span class="pill"><span class="dot" style="background:var(--primary);"></span>Sidiora Perps</span>
 			</div>
 			<p class="anim-5 mono" style="font-size:13px; color:var(--text-muted); margin-top:8px;">Hackathon Pitch Deck • March 2026</p>
 		</div>
@@ -466,15 +467,18 @@
 					<div class="node">Backend API</div>
 				</div>
 				<div class="arrow">↓</div>
-				<div class="node primary" style="min-width:350px;">Protocol Layer: VaultFactory, CopyTradingVault, RiskManager, RevenueSplitter</div>
+				<div class="node primary" style="min-width:350px;">Protocol Layer: VaultFactory, CopyTradingVault, RiskManager, RevenueSplitter, SidioraVaultAdapter</div>
 				<div class="arrow">↓</div>
 				<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
 					<div class="node blue">Indexer (events)</div>
 					<div class="node blue">BullMQ Queues</div>
-					<div class="node blue">Workers</div>
+					<div class="node blue">Mirror Bot Worker</div>
 				</div>
 				<div class="arrow">↓</div>
-				<div class="node green" style="min-width:280px;">PostgreSQL Analytics + Leaderboards</div>
+				<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+					<div class="node green" style="min-width:260px;">PostgreSQL Analytics + Leaderboards</div>
+					<div class="node primary" style="min-width:200px;">Sidiora Sequencer (Perps)</div>
+				</div>
 			</div>
 
 			<p class="anim-4 text-dim" style="font-size:18px; text-align:center; max-width:900px;">
@@ -607,26 +611,61 @@
 				<tbody>
 					<tr>
 						<td>Smart Contracts</td>
-						<td class="text-gold">Code + tests ready</td>
-						<td>Deploy and verify on Paxeer explorer</td>
+						<td class="text-green">✅ Live on Mainnet</td>
+						<td>Verify on PaxScan explorer</td>
+					</tr>
+					<tr>
+						<td>Sidiora Perps Layer</td>
+						<td class="text-green">✅ Adapter + Mirror Bot built</td>
+						<td>Connect to Sidiora sequencer API</td>
 					</tr>
 					<tr>
 						<td>Frontend + Backend</td>
-						<td class="text-gold">Local stack running</td>
-						<td>Publish live demo URL + API URL</td>
+						<td class="text-gold">⏳ Built, pending Railway access</td>
+						<td>Deploy via Railway (invite from Paxeer)</td>
 					</tr>
 					<tr>
 						<td>Indexer + Workers</td>
-						<td class="text-gold">Event pipeline implemented</td>
-						<td>Configure production queue and monitoring</td>
+						<td class="text-green">✅ Pipeline + Sidiora queue built</td>
+						<td>Wire to production BullMQ + PostgreSQL</td>
 					</tr>
 					<tr>
 						<td>Documentation</td>
-						<td class="text-green">Architecture + whitepaper complete</td>
-						<td>Link whitepaper in submission summary</td>
+						<td class="text-green">✅ Docs + README complete</td>
+						<td>Link docs in submission summary</td>
 					</tr>
 				</tbody>
 			</table>
+		</div>
+	</div>
+
+	<div class="slide">
+		<div class="bg-grid"></div>
+		<div class="bg-corner" style="bottom:-190px; right:-180px; background:var(--primary); opacity:.15;"></div>
+
+		<div style="max-width:1100px; width:100%; display:flex; flex-direction:column; gap:20px; align-items:center;">
+			<span class="badge anim-1">🟢 Live on HyperPaxeer Mainnet</span>
+			<h2 class="anim-2" style="text-align:center;">Deployed Contract Addresses</h2>
+
+			<table class="table anim-3" style="max-width:1050px; font-size:14px;">
+				<thead>
+					<tr>
+						<th>Contract</th>
+						<th>Address (Chain ID 125)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>ZibaXeerToken</td><td class="mono text-dim" style="font-size:13px;">0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1</td></tr>
+					<tr><td>ArgusOracle Proxy</td><td class="mono text-dim" style="font-size:13px;">0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1</td></tr>
+					<tr><td>PaxDexAdapter Proxy</td><td class="mono text-dim" style="font-size:13px;">0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd</td></tr>
+					<tr><td>RiskManager Proxy</td><td class="mono text-dim" style="font-size:13px;">0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d</td></tr>
+					<tr><td>RevenueSplitter Proxy</td><td class="mono text-dim" style="font-size:13px;">0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5</td></tr>
+					<tr><td>VaultRegistry Proxy</td><td class="mono text-dim" style="font-size:13px;">0x7BE93B4D42a63cc0005362390ECFB567139c6250</td></tr>
+					<tr><td>CopyTradingVault Impl</td><td class="mono text-dim" style="font-size:13px;">0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA</td></tr>
+					<tr><td style="font-weight:700; color:var(--accent);">VaultFactory Proxy ⭐</td><td class="mono" style="font-size:13px; color:var(--accent);">0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6</td></tr>
+				</tbody>
+			</table>
+			<p class="anim-4 mono" style="font-size:12px; color:var(--text-muted);">Explorer: paxscan.paxeer.app &nbsp;•&nbsp; EVM London-compatible &nbsp;•&nbsp; Gas used: ~8.7M</p>
 		</div>
 	</div>
 
