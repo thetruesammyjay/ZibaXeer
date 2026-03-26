@@ -128,12 +128,18 @@ graph TB
         SE[Strategy Engine - CopyTradingVault Proxy]
         RM[Risk Manager - UUPS Proxy]
         RS[Revenue Splitter - UUPS Proxy]
+        SA[SidioraVaultAdapter]
     end
 
-    subgraph Execution["Execution Layer"]
-        PD[PaxDex Router]
-        OB[Order Book]
+    subgraph SpotExecution["Spot Execution"]
+        PD[PaxDex SwapRouter02]
         LP[Liquidity Pools]
+    end
+
+    subgraph PerpsExecution["Perpetuals - Sidiora"]
+        MB[Mirror Bot - BullMQ Worker]
+        SID[Sidiora Off-chain Sequencer]
+        TA[ITradingAccount - Per-user Margin]
     end
 
     subgraph Infrastructure["Paxeer Infrastructure"]
@@ -149,8 +155,11 @@ graph TB
     SE --> RM
     RM --> AE
     SE --> PD
-    PD --> OB
     PD --> LP
+    SE --> SA
+    SA --> TA
+    SA --> MB
+    MB --> SID
     RS --> FW
     VR --> HP
     VF --> HP
