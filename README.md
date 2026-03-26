@@ -52,22 +52,36 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 
 ## Current Status
 
-As of March 2026, the repository includes a working baseline for both on-chain spot vault flows and Phase 1 Sidiora perpetual mirroring infrastructure.
+**🟢 LIVE on HyperPaxeer Mainnet (Chain ID 125) — March 2026**
 
-Implemented now:
+### Deployed Contracts
 
-- Core copy-trading contracts, backend API, and indexer pipeline are operational.
-- `SidioraVaultAdapter` includes delegation rotation/revoke, safety checks, and event emissions.
-- Foundry tests for Sidiora adapter delegation and margin flows are passing.
-- Backend and indexer include Sidiora queue plumbing and worker stubs for mirror intake.
-- Control-plane Sidiora endpoints are available for policy, status, freeze, and unfreeze.
-- Durable `traceId` decision audit logging is implemented in PostgreSQL for real-money operational traceability.
+| Contract | Address |
+|---|---|
+| ZibaXeerToken | [`0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1`](https://paxscan.paxeer.app/address/0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1) |
+| ArgusOracle Proxy | [`0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1`](https://paxscan.paxeer.app/address/0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1) |
+| PaxDexAdapter Proxy | [`0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd`](https://paxscan.paxeer.app/address/0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd) |
+| RiskManager Proxy | [`0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d`](https://paxscan.paxeer.app/address/0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d) |
+| RevenueSplitter Proxy | [`0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5`](https://paxscan.paxeer.app/address/0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5) |
+| VaultRegistry Proxy | [`0x7BE93B4D42a63cc0005362390ECFB567139c6250`](https://paxscan.paxeer.app/address/0x7BE93B4D42a63cc0005362390ECFB567139c6250) |
+| CopyTradingVault Impl | [`0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA`](https://paxscan.paxeer.app/address/0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA) |
+| **VaultFactory Proxy** | [**`0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6`**](https://paxscan.paxeer.app/address/0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6) |
 
-In progress / next-phase work:
+### What is live:
 
-- Full Sidiora sequencer integration beyond bootstrap/stub signal bridge.
-- Production policy tuning, alerting hardening, and deeper replay tooling.
-- Expanded automated tests for backend/indexer Sidiora workflows.
+- All 8 core ZibaXeer protocol contracts deployed and wired up on HyperPaxeer mainnet.
+- `SidioraVaultAdapter` with delegation rotation, safety checks, and event emissions.
+- 8 Foundry tests for Sidiora adapter delegation and margin flows — all passing.
+- Backend and indexer Sidiora queue pipeline, mirror worker with `traceId` idempotency, and audit persistence.
+- Control-plane API endpoints for policy, status, freeze, and unfreeze.
+- EVM compatibility patched for HyperPaxeer (London EVM — no Cancun opcodes).
+
+### In progress / next phase:
+
+- Backend deployment to Railway (pending Railway access from Paxeer team).
+- Frontend deployment to Vercel with live contract addresses.
+- Full Sidiora off-chain sequencer integration beyond signal bridge stubs.
+- PaxScan contract verification.
 
 ---
 
@@ -603,12 +617,18 @@ pnpm run lint
 
 ### Deploy to HyperPaxeer Mainnet
 
+> ✅ **Already deployed.** See [Current Status](#current-status) for live contract addresses.
+
+To run a fresh deployment (e.g. for a fork or testnet):
+
 ```bash
-# Deploy core contracts
-forge script script/Deploy.s.sol \
+# Full fresh deployment (EVM version locked to London for HyperPaxeer compatibility)
+cd contracts
+forge clean && forge build
+forge script script/DeployFresh.s.sol \
   --rpc-url https://public-mainnet.rpcpaxeer.online/evm \
-  --broadcast \
-  --verify
+  --broadcast --slow --skip-simulation
+```
 
 # Verify on PaxScan
 forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
