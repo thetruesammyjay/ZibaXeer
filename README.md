@@ -640,6 +640,7 @@ forge script script/DeployFresh.s.sol \
 ```
 
 # Verify on PaxScan
+```bash
 forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
     --chain 125 \
   --etherscan-api-key $PAXSCAN_API_KEY
@@ -658,6 +659,17 @@ vercel deploy --prod
 cd apps/backend
 railway up
 ```
+
+### Deploy Indexer
+
+```bash
+cd apps/indexer
+railway up
+```
+
+<Note>
+    For Railway monorepos, create two separate services from the same GitHub repository: one for backend and one for indexer. Set service-specific build/start commands and environment variables in each Railway service.
+</Note>
 
 ---
 
