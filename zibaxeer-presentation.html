@@ -691,9 +691,24 @@
 	</div>
 
 	<div class="nav" id="nav"></div>
-	<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navigate</div>
+	<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navigate &nbsp;·&nbsp; <kbd>F</kbd> fullscreen</div>
 
 	<script>
+		function toggleFS() {
+			const btn = document.getElementById('fsBtn');
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen();
+				btn.textContent = '✕ Exit Fullscreen';
+			} else {
+				document.exitFullscreen();
+				btn.textContent = '⛶ Fullscreen';
+			}
+		}
+		document.addEventListener('fullscreenchange', () => {
+			const btn = document.getElementById('fsBtn');
+			if (!document.fullscreenElement) btn.textContent = '⛶ Fullscreen';
+		});
+
 		(function () {
 			const slides = document.querySelectorAll('.slide');
 			const nav = document.getElementById('nav');
@@ -750,6 +765,9 @@
 				if (e.key === 'End') {
 					e.preventDefault();
 					goTo(total - 1);
+				}
+				if (e.key === 'f' || e.key === 'F') {
+					toggleFS();
 				}
 			});
 
