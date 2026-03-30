@@ -33,6 +33,7 @@ model Vault {
   tvl              String   @default("0") // Total Value Locked (scaled string)
   roi              Float    @default(0.0) // Return on Investment percentage
   drawdown         Float    @default(0.0) // Max drawdown recorded
+  monthlyFee       Float    @default(0.0) // Monthly subscription fee in USD
 
   createdAt        DateTime @default(now())
   status           VaultStatus @default(ACTIVE)

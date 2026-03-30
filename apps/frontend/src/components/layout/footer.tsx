@@ -15,7 +15,7 @@ export function Footer() {
                     <Link href="https://x.com/Ziba_Xeer" className="hover:text-foreground">
                         Twitter
                     </Link>
-                    <Link href="https://github.com/ZibaXeer" className="hover:text-foreground">
+                    <Link href="https://github.com/thetruesammyjay/ZibaXeer" className="hover:text-foreground">
                         GitHub
                     </Link>
                     <Link href="https://discord.gg/ZibaXeer" className="hover:text-foreground">

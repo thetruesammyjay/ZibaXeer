@@ -75,11 +75,11 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 - Backend and indexer Sidiora queue pipeline, mirror worker with `traceId` idempotency, and audit persistence.
 - Control-plane API endpoints for policy, status, freeze, and unfreeze.
 - EVM compatibility patched for HyperPaxeer (London EVM — no Cancun opcodes).
+- Backend & Indexer deployment to Railway with live PostgreSQL database and Prisma synchronisation.
 
 ### In progress / next phase:
 
-- Backend deployment to Railway (pending Railway access from Paxeer team).
-- Frontend deployment to Vercel with live contract addresses.
+- Frontend deployment to Vercel with live contract addresses and live API.
 - Full Sidiora off-chain sequencer integration beyond signal bridge stubs.
 - PaxScan contract verification.
 
@@ -218,8 +218,9 @@ flowchart LR
 
 ## Core Features
 
-### Vault System
+### Trader Marketplace (Vaults)
 
+- **Subscribe to Copy Trade** — Followers can discover top traders on the public marketplace and subscribe with capital allocations to copy their trades
 - **Vault Creation** — Top-ranked Colosseum gladiators create strategy vaults with custom parameters
 - **Multi-Strategy Support** — Spot trading, perpetuals, yield farming, and cross-protocol strategies
 - **Tiered Access** — Vault leaders can set minimum follower requirements (wallet tier, $PAX stake)
@@ -233,11 +234,11 @@ flowchart LR
 - **Circuit Breakers** — Protocol-level halts if a vault's drawdown exceeds safety thresholds
 - **Argus Integration** — Real-time behavioral scoring across 500+ on-chain signals via LLM decisioning
 
-### Performance Analytics
+### Performance Analytics & Leaderboard
 
+- **Public Leaderboard** — Transparent, global rankings of the best traders based on Argus score and performance metrics
 - **Argus-Derived Metrics** — Win rate, Sharpe ratio, max drawdown, consistency score, risk-adjusted return
 - **On-Chain Dashboards** — Real-time PnL tracking, trade history, and follower analytics
-- **Leaderboard Rankings** — Vault leaders ranked by performance, with Colosseum season integration
 - **Historical Backtesting** — View simulated performance of strategies against historical PaxDex data
 
 ### Revenue Sharing

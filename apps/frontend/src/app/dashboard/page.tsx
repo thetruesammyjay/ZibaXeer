@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { useAccount, useBalance } from "wagmi"
 import { formatEther } from "viem"
 import { useGlobalAnalytics } from "@/hooks/api/useAnalytics"
@@ -29,7 +30,7 @@ export default function DashboardPage() {
                         Global protocol analytics and your personal wallet state.
                     </p>
                 </div>
-                <Button>Explore New Vaults</Button>
+                <Button asChild><Link href="/vaults">Explore New Vaults</Link></Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
