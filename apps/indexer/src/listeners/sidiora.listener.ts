@@ -24,24 +24,17 @@ const MARKET_SYMBOLS: Record<number, string> = {
  * PositionOpened and PositionClosed are emitted by PositionFacet.
  */
 const SIDIORA_EVENTS_ABI = [
-    // PositionOpened(uint256 indexed positionId, address indexed trader, uint256 marketId,
-    //                address collateralToken, uint256 collateralAmount, uint256 leverage, bool isLong)
     'event PositionOpened(uint256 indexed positionId, address indexed trader, uint256 marketId, address collateralToken, uint256 collateralAmount, uint256 leverage, bool isLong)',
-    // PositionClosed(uint256 indexed positionId, address indexed trader, int256 pnl)
     'event PositionClosed(uint256 indexed positionId, address indexed trader, int256 pnl)',
 ];
 
 /**
  * Start the Sidiora on-chain signal bridge.
  *
- * Phase 2 behaviour — two paths:
- *
- * A) **Live on-chain listener** (primary): subscribes to PositionOpened / PositionClosed
- *    events emitted by the Sidiora Diamond and queues them for the backend mirror worker.
- *    Filters events to leader addresses listed in KNOWN_LEADER_ADDRESSES env var.
- *
- * B) **Bootstrap fallback**: if SIDIORA_BOOTSTRAP_SIGNAL_JSON is set, queue it once
- *    immediately (useful for manual integration testing without live leaders).
+ * Two paths:
+ * A) Live on-chain listener — subscribes to PositionOpened/PositionClosed on the Sidiora
+ *    Diamond, filtered by KNOWN_LEADER_ADDRESSES. Auto-reconnects when RPC filter expires.
+ * B) Bootstrap fallback — if SIDIORA_BOOTSTRAP_SIGNAL_JSON is set, queue it once immediately.
  */
 export async function startSidioraSignalBridge() {
     // ── Path B: bootstrap fallback ────────────────────────────────────────────
@@ -59,7 +52,6 @@ export async function startSidioraSignalBridge() {
     }
 
     // ── Path A: live on-chain listener ────────────────────────────────────────
-    // Parse leader addresses from env (comma-separated, same format as KNOWN_VAULT_ADDRESSES)
     const knownLeaders = new Set(
         (process.env.KNOWN_LEADER_ADDRESSES ?? '')
             .split(',')
@@ -75,6 +67,19 @@ export async function startSidioraSignalBridge() {
         return;
     }
 
+    attachDiamondListeners(knownLeaders);
+}
+
+/**
+ * Attaches PositionOpened / PositionClosed listeners on the Sidiora Diamond.
+ * Extracted into its own function so it can be called again on filter expiry.
+ *
+ * HyperPaxeer's RPC drops eth_newFilter registrations after ~5 minutes of inactivity.
+ * ethers v6 surfaces this as a provider 'error' event (code=UNKNOWN_ERROR,
+ * message contains 'filter ... not found'). We detect that, remove all stale
+ * listeners, and re-attach after a 2-second backoff — no pod restart required.
+ */
+function attachDiamondListeners(knownLeaders: Set<string>) {
     console.log(
         `[SidioraListener] Subscribing to Sidiora Diamond ${SIDIORA_DIAMOND} ` +
         `for ${knownLeaders.size} leader(s)...`
@@ -98,9 +103,7 @@ export async function startSidioraSignalBridge() {
             if (!knownLeaders.has(trader.toLowerCase())) return;
 
             const marketSymbol = MARKET_SYMBOLS[Number(marketId)] ?? `MARKET_${marketId}`;
-            // leverage is 18-decimal fixed-point; convert to human-readable string
             const leverageHuman = (Number(leverage) / 1e18).toFixed(2);
-            // collateralAmount decimals vary per token — store raw string, sequencer re-parses
             const sizeRaw = collateralAmount.toString();
 
             const payload: SidioraMirrorSignalPayload = {
@@ -108,12 +111,12 @@ export async function startSidioraSignalBridge() {
                 eventType: 'LEADER_SIGNAL_RECEIVED',
                 traceId: randomUUID(),
                 leaderAddress: trader,
-                vaultAddress: trader, // vault address resolved by backend if needed
+                vaultAddress: trader,
                 sidioraMarket: marketSymbol,
                 side: isLong ? 'LONG' : 'SHORT',
                 orderType: 'MARKET',
                 leaderSize: sizeRaw,
-                leaderPrice: '0', // not available in event; policy evaluator uses '0' gracefully
+                leaderPrice: '0',
                 leaderLeverage: leverageHuman,
                 collateralToken,
                 action: 'OPEN',
@@ -152,8 +155,8 @@ export async function startSidioraSignalBridge() {
                 traceId: randomUUID(),
                 leaderAddress: trader,
                 vaultAddress: trader,
-                sidioraMarket: 'UNKNOWN', // market not in close event; policy still evaluates
-                side: 'LONG',             // direction not relevant for close
+                sidioraMarket: 'UNKNOWN',
+                side: 'LONG',
                 orderType: 'MARKET',
                 leaderSize: '0',
                 leaderPrice: '0',
@@ -178,6 +181,25 @@ export async function startSidioraSignalBridge() {
         }
     );
 
+    // ── Filter expiry auto-reconnect ─────────────────────────────────────────
+    // One-time error handler: detects RPC filter expiry and restarts the listener.
+    const onProviderError = (err: Error & { code?: string; error?: { message?: string } }) => {
+        const isFilterExpiry =
+            err?.code === 'UNKNOWN_ERROR' &&
+            (err?.error?.message ?? '').includes('filter') &&
+            (err?.error?.message ?? '').includes('not found');
+
+        if (isFilterExpiry) {
+            console.warn('[SidioraListener] RPC filter expired — reconnecting in 2s...');
+            provider.off('error', onProviderError);
+            diamond.removeAllListeners();
+            setTimeout(() => attachDiamondListeners(knownLeaders), 2_000);
+        } else {
+            console.error('[SidioraListener] Provider error:', err);
+        }
+    };
+
+    provider.on('error', onProviderError);
+
     console.log('[SidioraListener] Live listener active. Watching for leader position events...');
 }
-
