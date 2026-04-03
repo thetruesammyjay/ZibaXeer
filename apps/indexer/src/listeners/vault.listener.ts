@@ -4,12 +4,22 @@ import { processTrade } from '../processors/trade.processor.js';
 import { updateVaultMetrics } from '../processors/pnl.processor.js';
 import { FollowerPayload } from '@zibaxeer/types';
 
+/** Stored so we can remove old listeners per-vault before re-attaching on reconnect. */
+const vaultContractMap = new Map<string, ReturnType<typeof getVaultContract>>();
+
 /**
  * Dynamically listen to events for a specific CopyTradingVault proxy.
  * Handles: TradeExecuted, FollowerSubscribed, FollowerUnsubscribed
+ *
+ * Safe to call multiple times for the same address (e.g. after RPC filter expiry reconnect)
+ * — cleans up the previous contract instance's listeners before creating fresh ones.
  */
 export async function listenToVault(vaultAddress: string) {
+    // Clean up stale listeners for this vault
+    vaultContractMap.get(vaultAddress)?.removeAllListeners();
+
     const vault = getVaultContract(vaultAddress);
+    vaultContractMap.set(vaultAddress, vault);
 
     console.log(`[VaultListener] Subscribing to events on Vault: ${vaultAddress}...`);
 
@@ -27,7 +37,7 @@ export async function listenToVault(vaultAddress: string) {
     });
 
     // ABI: FollowerSubscribed(address indexed follower, uint256 amount)
-    vault.on('FollowerSubscribed', async (follower: string, amount: bigint, event: any) => {
+    vault.on('FollowerSubscribed', async (follower: string, amount: bigint, _event: any) => {
         console.log(`[FollowerSubscribed] Vault: ${vaultAddress} | Follower: ${follower} | Amount: ${amount.toString()}`);
         try {
             await followerEventQueue.add('follower-subscribed', {
@@ -42,7 +52,7 @@ export async function listenToVault(vaultAddress: string) {
     });
 
     // ABI: FollowerUnsubscribed(address indexed follower, uint256 amount)
-    vault.on('FollowerUnsubscribed', async (follower: string, amount: bigint, event: any) => {
+    vault.on('FollowerUnsubscribed', async (follower: string, amount: bigint, _event: any) => {
         console.log(`[FollowerUnsubscribed] Vault: ${vaultAddress} | Follower: ${follower} | Amount: ${amount.toString()}`);
         try {
             await followerEventQueue.add('follower-unsubscribed', {

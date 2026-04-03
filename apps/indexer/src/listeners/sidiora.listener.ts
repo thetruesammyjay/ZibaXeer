@@ -181,25 +181,5 @@ function attachDiamondListeners(knownLeaders: Set<string>) {
         }
     );
 
-    // ── Filter expiry auto-reconnect ─────────────────────────────────────────
-    // One-time error handler: detects RPC filter expiry and restarts the listener.
-    const onProviderError = (err: Error & { code?: string; error?: { message?: string } }) => {
-        const isFilterExpiry =
-            err?.code === 'UNKNOWN_ERROR' &&
-            (err?.error?.message ?? '').includes('filter') &&
-            (err?.error?.message ?? '').includes('not found');
-
-        if (isFilterExpiry) {
-            console.warn('[SidioraListener] RPC filter expired — reconnecting in 2s...');
-            provider.off('error', onProviderError);
-            diamond.removeAllListeners();
-            setTimeout(() => attachDiamondListeners(knownLeaders), 2_000);
-        } else {
-            console.error('[SidioraListener] Provider error:', err);
-        }
-    };
-
-    provider.on('error', onProviderError);
-
     console.log('[SidioraListener] Live listener active. Watching for leader position events...');
 }

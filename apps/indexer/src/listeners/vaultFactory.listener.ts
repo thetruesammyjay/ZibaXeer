@@ -3,17 +3,26 @@ import { vaultDeployedQueue } from '../queues/index.js';
 import { listenToVault } from './vault.listener.js';
 import { VaultDeployedPayload } from '@zibaxeer/types';
 
+/** Stored so we can remove old listeners before re-attaching on reconnect. */
+let factoryContractRef: ReturnType<typeof getVaultFactoryContract> | null = null;
+
 /**
  * Listen for newly deployed vault contracts emitted by VaultFactory.
  * ABI: VaultDeployed(address indexed leader, address indexed vaultProxy)
+ *
+ * Safe to call multiple times (e.g. after RPC filter expiry reconnect) — cleans up
+ * the previous contract instance's listeners before creating fresh ones.
  */
 export async function listenToVaultFactory() {
-    const factory = getVaultFactoryContract();
-    const factoryAddress = await factory.getAddress();
+    // Clean up stale listeners from the previous contract instance
+    factoryContractRef?.removeAllListeners();
 
+    const factory = getVaultFactoryContract();
+    factoryContractRef = factory;
+
+    const factoryAddress = await factory.getAddress();
     console.log(`[VaultFactoryListener] Subscribing to VaultDeployed on ${factoryAddress}...`);
 
-    // ABI: VaultDeployed(address indexed leader, address indexed vaultProxy)
     factory.on('VaultDeployed', async (leader: string, vaultProxy: string, event: any) => {
         try {
             console.log(`[VaultDeployed] New Vault: ${vaultProxy} | Leader: ${leader}`);
