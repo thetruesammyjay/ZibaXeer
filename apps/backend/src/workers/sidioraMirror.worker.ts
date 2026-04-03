@@ -9,8 +9,13 @@ import { sidioraMirrorResultQueue, sidioraRiskAlertQueue } from '../queues/sidio
 import { evaluateSidioraSignalPolicy } from '../services/sidioraMirror.service';
 import { getSidioraPolicy } from '../services/sidioraPolicy.service';
 import { recordSidioraDuplicateTrace, recordSidioraMirrorDecision } from '../services/sidioraAudit.service';
+import { executeSignal } from '../services/sidioraSequencer.service';
+import { assertSidioraConfig } from '../config/sidiora';
 
 const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24;
+
+// Warn at startup if mirror bot key is not configured
+assertSidioraConfig();
 
 function idempotencyKey(traceId: string) {
     return `sidiora:mirror:trace:${traceId}`;
@@ -67,9 +72,23 @@ export const sidioraMirrorWorker = new Worker(
             status,
             reason: decision.reason,
             riskSnapshot: decision.riskSnapshot,
-            sequencerRequestId: `stub-${traceId}`,
+            sequencerRequestId: `pending-${traceId}`,
             timestamp: Math.floor(Date.now() / 1000),
         };
+
+        if (decision.accepted) {
+            try {
+                const seq = await executeSignal(job.data);
+                result.sequencerRequestId = seq.txHash;
+                result.status = 'SEQUENCER_SUBMITTED';
+                console.log(`[SidioraMirrorWorker] Sequencer submitted: ${seq.txHash} | traceId=${traceId}`);
+            } catch (seqErr: any) {
+                result.status = 'SEQUENCER_FAILED';
+                result.sequencerRequestId = `fail-${traceId}`;
+                result.reason = seqErr?.message ?? 'SEQUENCER_ERROR';
+                console.error(`[SidioraMirrorWorker] Sequencer failed traceId=${traceId}:`, seqErr);
+            }
+        }
 
         await recordSidioraMirrorDecision(job.data, result, policy.version);
 

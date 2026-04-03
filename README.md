@@ -76,11 +76,17 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 - Control-plane API endpoints for policy, status, freeze, and unfreeze.
 - EVM compatibility patched for HyperPaxeer (London EVM — no Cancun opcodes).
 - Backend & Indexer deployment to Railway with live PostgreSQL database and Prisma synchronisation.
+- **Frontend Trader Marketplace** — vault listing with risk filters (SAFE / MODERATE / HIGH), live API data.
+- **Subscribe to Copy Trade** — two-step on-chain flow (ERC-20 approve → `subscribe(amount)`) via Radix modal, reads token symbol and decimals on-chain, shows PaxScan tx link on success.
+- **Vault Detail Page** (`/vaults/[id]`) — on-chain TVL, vault name, leader address (PaxScan linked), 30-day ROI chart (lightweight-charts v5), user position display, partial unsubscribe flow.
+- **Dashboard portfolio** — real on-chain `followers(user).deposited` across all vaults replaces the previous raw PAX balance; vault cards route to the detail page.
+- **Leaderboard PaxScan links** — every leader address links directly to `paxscan.paxeer.app`.
 
 ### In progress / next phase:
 
 - Frontend deployment to Vercel with live contract addresses and live API.
-- Full Sidiora off-chain sequencer integration beyond signal bridge stubs.
+- Mirror bot activation
+- Live Sidiora event listener activation
 - PaxScan contract verification.
 
 ---
