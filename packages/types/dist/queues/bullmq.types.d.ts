@@ -70,6 +70,19 @@ export interface SidioraMirrorSignalPayload {
     leaderSize: string;
     leaderPrice: string;
     leaderLeverage: string;
+    /**
+     * ERC-20 token address to use as collateral margin on Sidiora.
+     * Must be one of: USID, USDC, USDT, USDL on chain 125.
+     */
+    collateralToken: string;
+    /**
+     * Whether this signal opens a new position or closes an existing one.
+     */
+    action: 'OPEN' | 'CLOSE';
+    /**
+     * Sidiora positionId to close. Required when action === 'CLOSE'.
+     */
+    positionId?: string;
     timestamp: number;
     source: string;
 }
@@ -84,7 +97,7 @@ export interface SidioraMirrorExecutionResultPayload {
     leaderAddress: string;
     followerAddress: string;
     sidioraAccount: string;
-    status: 'ACCEPTED' | 'REJECTED_POLICY' | 'DUPLICATE_IGNORED';
+    status: 'ACCEPTED' | 'REJECTED_POLICY' | 'DUPLICATE_IGNORED' | 'SEQUENCER_SUBMITTED' | 'SEQUENCER_FAILED';
     reason: string | null;
     riskSnapshot: {
         effectiveLeverage: string;

@@ -1,3 +1,9 @@
+import React from "react";
+
+/**
+ * ZX Logo component (updated to match provided image)
+ * Keeps original 32x32 size and soft background
+ */
 export const Logo = () => (
     <svg
         width="32"
@@ -5,22 +11,32 @@ export const Logo = () => (
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="text-primary"
     >
+        {/* Background */}
         <rect width="32" height="32" rx="8" fill="currentColor" fillOpacity="0.1" />
+
+        {/* Red Z */}
         <path
-            d="M21.5 10H10.5L16 15.5L10.5 21H21.5L16 15.5L21.5 10Z"
-            fill="currentColor"
+            d="M6 7H26C26.6 7 27 7.4 27 8V9.5C27 10 26.7 10.4 26.3 10.6L12 19H26C26.6 19 27 19.4 27 20V24C27 24.6 26.6 25 26 25H6C5.4 25 5 24.6 5 24V22.5C5 22 5.3 21.6 5.7 21.4L20 13H6C5.4 13 5 12.6 5 12V8C5 7.4 5.4 7 6 7Z"
+            fill="#D61F2C"
         />
+
+        {/* Blue X - main diagonal */}
         <path
-            d="M10.5 10H8.5V21H10.5L16 15.5L10.5 10Z"
-            fill="currentColor"
-            fillOpacity="0.5"
+            d="M18 6L28 16L18 26H14L24 16L14 6H18Z"
+            fill="#5BC0EB"
         />
+
+        {/* Blue X - split accent (top right) */}
         <path
-            d="M21.5 10H23.5V21H21.5L16 15.5L21.5 10Z"
-            fill="currentColor"
-            fillOpacity="0.5"
+            d="M22.5 6H27.5L25 9L22.5 6Z"
+            fill="#5BC0EB"
+        />
+
+        {/* Blue X - split accent (bottom right) */}
+        <path
+            d="M22.5 26H27.5L25 23L22.5 26Z"
+            fill="#5BC0EB"
         />
     </svg>
-)
+);
