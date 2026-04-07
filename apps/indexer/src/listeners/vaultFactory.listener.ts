@@ -31,41 +31,45 @@ export async function listenToVaultFactory() {
     pollingInterval = setInterval(async () => {
         try {
             const currentBlock = await provider.getBlockNumber();
-            if (currentBlock <= lastBlock) return;
 
-            const events = await factory.queryFilter('VaultDeployed', lastBlock + 1, currentBlock);
-            lastBlock = currentBlock;
-
-            for (const rawEvent of events) {
-                const event = rawEvent as ethers.EventLog;
-                const [leader, vaultProxy] = event.args as unknown as [string, string];
+            // HyperPaxeer eth_getLogs only supports single-block queries (from == to).
+            // Loop block-by-block rather than using a range.
+            for (let block = lastBlock + 1; block <= currentBlock; block++) {
                 try {
-                    console.log(`[VaultDeployed] New Vault: ${vaultProxy} | Leader: ${leader}`);
+                    const events = await factory.queryFilter('VaultDeployed', block, block);
+                    lastBlock = block;
 
-                    // Wait briefly to ensure RPC state is synced to the new proxy
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    for (const rawEvent of events) {
+                        const event = rawEvent as ethers.EventLog;
+                        const [leader, vaultProxy] = event.args as unknown as [string, string];
+                        try {
+                            console.log(`[VaultDeployed] New Vault: ${vaultProxy} | Leader: ${leader}`);
 
-                    // Read baseAsset on-chain — not emitted in the event
-                    const vaultContract = getVaultContract(vaultProxy) as any;
-                    const baseAsset: string = await vaultContract.baseAsset();
-                    console.log(`[VaultDeployed] BaseAsset: ${baseAsset}`);
+                            await new Promise(resolve => setTimeout(resolve, 2000));
 
-                    await vaultDeployedQueue.add('register-vault', {
-                        vaultAddress: vaultProxy,
-                        leader,
-                        baseAsset,
-                    } as VaultDeployedPayload);
+                            const vaultContract = getVaultContract(vaultProxy) as any;
+                            const baseAsset: string = await vaultContract.baseAsset();
+                            console.log(`[VaultDeployed] BaseAsset: ${baseAsset}`);
 
-                    console.log(`[VaultFactoryListener] Queued DB registration for ${vaultProxy}`);
+                            await vaultDeployedQueue.add('register-vault', {
+                                vaultAddress: vaultProxy,
+                                leader,
+                                baseAsset,
+                            } as VaultDeployedPayload);
 
-                    // Immediately start watching this vault's trades and subscriptions
-                    await listenToVault(vaultProxy);
-                } catch (innerErr) {
-                    console.error(`[VaultFactoryListener] Error handling VaultDeployed for ${vaultProxy}:`, innerErr);
+                            console.log(`[VaultFactoryListener] Queued DB registration for ${vaultProxy}`);
+                            await listenToVault(vaultProxy);
+                        } catch (innerErr) {
+                            console.error(`[VaultFactoryListener] Error handling VaultDeployed for ${vaultProxy}:`, innerErr);
+                        }
+                    }
+                } catch (blockErr) {
+                    console.error(`[VaultFactoryListener] Error querying block ${block}:`, blockErr);
+                    break; // retry this block on next poll cycle
                 }
             }
         } catch (err) {
             console.error('[VaultFactoryListener] Polling error:', err);
         }
-    }, 5_000); // poll every 5 seconds
+    }, 5_000);
 }
