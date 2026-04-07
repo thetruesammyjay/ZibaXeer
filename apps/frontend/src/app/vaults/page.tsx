@@ -15,7 +15,6 @@ import { SubscribeModal } from "@/components/ui/subscribe-modal"
 
 import { useVaults, type VaultData } from "@/hooks/api/useVaults"
 import { formatEther } from "viem"
-import { useState as useLocalState } from "react"
 import Loading from "@/app/loading"
 
 type RiskFilter = "ALL" | "SAFE" | "MODERATE" | "HIGH"
