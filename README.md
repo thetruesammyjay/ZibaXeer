@@ -52,7 +52,7 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 
 ## Current Status
 
-**🟢 LIVE on HyperPaxeer Mainnet (Chain ID 125) — March 2026**
+**🟢 LIVE on HyperPaxeer Mainnet (Chain ID 125) — April 2026**
 
 ### Deployed Contracts
 
@@ -69,24 +69,26 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 
 ### What is live:
 
-- All 8 core ZibaXeer protocol contracts deployed and wired up on HyperPaxeer mainnet.
+- All 8 core ZibaXeer protocol contracts deployed and wired on HyperPaxeer mainnet.
 - `SidioraVaultAdapter` with delegation rotation, safety checks, and event emissions.
 - 8 Foundry tests for Sidiora adapter delegation and margin flows — all passing.
-- Backend and indexer Sidiora queue pipeline, mirror worker with `traceId` idempotency, and audit persistence.
+- **Indexer** deployed on Railway — Redis connected via private network, event polling using single-block `queryFilter` loops (HyperPaxeer `eth_getLogs` compatibility).
+- **Backend API** deployed on Railway — Express on port 8080, PostgreSQL + Prisma synced, BullMQ workers live (`SidioraMirrorSignalQueue`, `VaultDeployedQueue`, `FollowerEventQueue`).
+- Mirror bot EOA `0xDC4988e240ffc9d51E1e3aB853577102d6d20Fd6` prefunded with 76,000+ PAX for gas.
+- Backend/indexer Sidiora queue pipeline, mirror worker with `traceId` idempotency, and audit persistence.
 - Control-plane API endpoints for policy, status, freeze, and unfreeze.
 - EVM compatibility patched for HyperPaxeer (London EVM — no Cancun opcodes).
-- Backend & Indexer deployment to Railway with live PostgreSQL database and Prisma synchronisation.
 - **Frontend Trader Marketplace** — vault listing with risk filters (SAFE / MODERATE / HIGH), live API data.
-- **Subscribe to Copy Trade** — two-step on-chain flow (ERC-20 approve → `subscribe(amount)`) via Radix modal, reads token symbol and decimals on-chain, shows PaxScan tx link on success.
-- **Vault Detail Page** (`/vaults/[id]`) — on-chain TVL, vault name, leader address (PaxScan linked), 30-day ROI chart (lightweight-charts v5), user position display, partial unsubscribe flow.
-- **Dashboard portfolio** — real on-chain `followers(user).deposited` across all vaults replaces the previous raw PAX balance; vault cards route to the detail page.
+- **Subscribe to Copy Trade** — two-step on-chain flow (ERC-20 approve → `subscribe(amount)`) via modal, reads token symbol and decimals on-chain, shows PaxScan tx link on success.
+- **Vault Detail Page** (`/vaults/[id]`) — on-chain TVL, vault name, leader address (PaxScan linked), 30-day ROI chart, user position display, partial unsubscribe flow.
+- **Dashboard portfolio** — real on-chain `followers(user).deposited` across all vaults via `useUserPortfolio`; vault cards route to the detail page.
 - **Leaderboard PaxScan links** — every leader address links directly to `paxscan.paxeer.app`.
 
-### In progress / next phase:
+### Pending (waiting on Paxeer team):
 
-- Frontend deployment to Vercel with live contract addresses and live API.
-- Mirror bot activation
-- Live Sidiora event listener activation
+- `SidioraVaultAdapter.authorizeMirrorBot(0xDC4988e240ffc9d51E1e3aB853577102d6d20Fd6)` — authorizes our mirror bot on the Sidiora Diamond.
+- First leader EOA address for `KNOWN_LEADER_ADDRESSES` — activates the Sidiora live listener in the indexer.
+- Frontend deployment to Vercel/Railway with production domain.
 - PaxScan contract verification.
 
 ---
