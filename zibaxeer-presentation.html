@@ -4,786 +4,678 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>ZibaXeer - HyperPaxeer Copy-Trading Vault Protocol</title>
+	<title>ZibaXeer — Pitch Deck · HyperPaxeer Copy-Trading Protocol</title>
 	<style>
-		@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+		@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-		* {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-		}
+		* { margin: 0; padding: 0; box-sizing: border-box; }
 
 		:root {
-			--bg: #0f0b08;
-			--bg-card: #1a120d;
-			--bg-card-hover: #241a13;
-			--primary: #dc4b0f;
-			--primary-soft: rgba(220, 75, 15, 0.09);
-			--primary-glow: rgba(220, 75, 15, 0.28);
-			--accent: #f97316;
-			--gold: #f59e0b;
-			--green: #22c55e;
-			--blue: #3b82f6;
-			--text: #fff6ef;
-			--text-dim: #cfb9a9;
-			--text-muted: #8a7568;
-			--border: #2d2119;
+			--bg:           #07090f;
+			--bg-inner:     #080d1a;
+			--bg-card:      rgba(14, 20, 36, 0.75);
+			--bg-card-h:    rgba(14, 20, 36, 0.95);
+			--red:          #D61F2C;
+			--red-s:        rgba(214, 31, 44, 0.12);
+			--red-g:        rgba(214, 31, 44, 0.35);
+			--cyan:         #5BC0EB;
+			--cyan-s:       rgba(91, 192, 235, 0.12);
+			--green:        #22c55e;
+			--amber:        #f59e0b;
+			--purple:       #a855f7;
+			--text:         #ffffff;
+			--text-dim:     #94a3b8;
+			--text-muted:   #475569;
+			--border:       rgba(255,255,255,0.07);
+			--border-red:   rgba(214,31,44,0.35);
+			--border-cyan:  rgba(91,192,235,0.30);
 		}
 
-		html,
-		body {
-			width: 100%;
-			height: 100%;
+		html, body {
+			width: 100%; height: 100%;
 			background: var(--bg);
 			color: var(--text);
-			font-family: 'Manrope', sans-serif;
+			font-family: 'Outfit', sans-serif;
 			overflow: hidden;
 			-webkit-font-smoothing: antialiased;
 		}
 
-		.mono {
-			font-family: 'IBM Plex Mono', monospace;
-		}
+		.mono { font-family: 'IBM Plex Mono', monospace; }
+		.heading { font-family: 'Bricolage Grotesque', sans-serif; }
 
+		/* ── Slide base ── */
 		.slide {
-			position: absolute;
-			inset: 0;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			padding: 58px 80px;
-			opacity: 0;
-			visibility: hidden;
-			transform: translateX(26px);
-			transition: opacity .45s ease, transform .45s ease;
+			position: absolute; inset: 0;
+			display: flex; flex-direction: column;
+			align-items: center; justify-content: center;
+			padding: 52px 80px;
+			opacity: 0; visibility: hidden;
+			transform: translateX(28px);
+			transition: opacity .42s ease, transform .42s ease;
 		}
+		.slide.active  { opacity: 1; visibility: visible; transform: translateX(0); }
+		.slide.exit-left { opacity: 0; transform: translateX(-28px); }
 
-		.slide.active {
-			opacity: 1;
-			visibility: visible;
-			transform: translateX(0);
-		}
-
-		.slide.exit-left {
-			opacity: 0;
-			transform: translateX(-26px);
-		}
-
+		/* ── Typography ── */
 		h1 {
-			font-size: clamp(50px, 7vw, 102px);
-			line-height: 1.02;
-			letter-spacing: -0.03em;
-			font-weight: 800;
+			font-family: 'Bricolage Grotesque', sans-serif;
+			font-size: clamp(52px, 7vw, 104px);
+			line-height: 1.01; letter-spacing: -0.03em; font-weight: 800;
 		}
-
 		h2 {
-			font-size: clamp(38px, 4.8vw, 62px);
-			line-height: 1.08;
-			letter-spacing: -0.02em;
-			font-weight: 800;
+			font-family: 'Bricolage Grotesque', sans-serif;
+			font-size: clamp(36px, 4.5vw, 60px);
+			line-height: 1.08; letter-spacing: -0.02em; font-weight: 800;
 		}
-
 		h3 {
-			font-size: clamp(22px, 2.2vw, 30px);
-			font-weight: 700;
-			line-height: 1.2;
+			font-family: 'Bricolage Grotesque', sans-serif;
+			font-size: clamp(18px, 1.8vw, 24px);
+			font-weight: 700; line-height: 1.2;
 		}
 
-		.text-primary {
-			color: var(--primary);
+		/* ── Gradient text ── */
+		.grad {
+			background: linear-gradient(120deg, var(--red) 0%, var(--cyan) 100%);
+			-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+			background-clip: text;
 		}
 
-		.text-accent {
-			color: var(--accent);
-		}
-
-		.text-gold {
-			color: var(--gold);
-		}
-
-		.text-green {
-			color: var(--green);
-		}
-
-		.text-blue {
-			color: var(--blue);
-		}
-
-		.text-dim {
-			color: var(--text-dim);
-		}
-
-		.text-muted {
-			color: var(--text-muted);
-		}
-
+		/* ── Backgrounds ── */
 		.bg-grid {
-			position: absolute;
-			inset: 0;
-			pointer-events: none;
+			position: absolute; inset: 0; pointer-events: none;
 			background-image:
-				linear-gradient(rgba(220, 75, 15, 0.03) 1px, transparent 1px),
-				linear-gradient(90deg, rgba(220, 75, 15, 0.03) 1px, transparent 1px);
-			background-size: 58px 58px;
+				linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+				linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+			background-size: 52px 52px;
+		}
+		.blob {
+			position: absolute; border-radius: 50%;
+			filter: blur(90px); pointer-events: none;
 		}
 
-		.bg-radial {
-			position: absolute;
-			inset: 0;
-			pointer-events: none;
-			background: radial-gradient(ellipse 55% 46% at 50% 50%, rgba(220, 75, 15, 0.12) 0%, transparent 72%);
-		}
-
-		.bg-corner {
-			position: absolute;
-			width: 480px;
-			height: 480px;
-			border-radius: 50%;
-			filter: blur(120px);
-			pointer-events: none;
-			opacity: .15;
-		}
-
-		.pill {
-			display: inline-flex;
-			align-items: center;
-			gap: 10px;
-			border-radius: 999px;
-			border: 1px solid var(--border);
+		/* ── Cards ── */
+		.card {
 			background: var(--bg-card);
-			padding: 12px 20px;
-			font-size: 16px;
-			font-weight: 600;
+			border: 1px solid var(--border);
+			border-radius: 16px; padding: 22px 24px;
+			transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
 		}
-
-		.dot {
-			width: 8px;
-			height: 8px;
-			border-radius: 50%;
+		.card:hover {
+			border-color: var(--border-red);
+			transform: translateY(-3px);
+			box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 16px rgba(214,31,44,0.10);
 		}
+		.card-cyan:hover { border-color: var(--border-cyan); box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 16px rgba(91,192,235,0.10); }
 
+		/* ── Badge / pill ── */
 		.badge {
 			display: inline-block;
 			border-radius: 8px;
-			border: 1px solid rgba(220, 75, 15, 0.45);
-			background: var(--primary-soft);
-			color: #ffb08f;
-			letter-spacing: 0.08em;
-			font-size: 13px;
-			font-weight: 700;
-			padding: 7px 14px;
-			text-transform: uppercase;
+			border: 1px solid var(--border-red);
+			background: var(--red-s);
+			color: #ff8d96;
+			letter-spacing: 0.10em;
+			font-size: 12px; font-weight: 700; font-family: 'Bricolage Grotesque', sans-serif;
+			padding: 6px 14px; text-transform: uppercase;
 		}
+		.badge-cyan { border-color: var(--border-cyan); background: var(--cyan-s); color: var(--cyan); }
+		.badge-green { border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.10); color: #4ade80; }
 
-		.card {
-			border: 1px solid var(--border);
-			border-radius: 16px;
-			background: var(--bg-card);
-			padding: 24px 26px;
-			transition: all .25s ease;
+		.pill {
+			display: inline-flex; align-items: center; gap: 8px;
+			border-radius: 999px; border: 1px solid var(--border);
+			background: rgba(14,20,36,0.6);
+			padding: 10px 18px; font-size: 15px; font-weight: 500;
 		}
+		.dot { width: 8px; height: 8px; border-radius: 50%; }
 
-		.card:hover {
-			border-color: rgba(220, 75, 15, 0.5);
-			box-shadow: 0 8px 30px var(--primary-glow);
-			background: var(--bg-card-hover);
-		}
-
+		/* ── Nodes (flow diagram) ── */
 		.node {
-			min-width: 150px;
-			text-align: center;
-			font-size: 15px;
-			font-weight: 700;
-			border-radius: 12px;
-			border: 1px solid var(--border);
-			background: var(--bg-card);
-			padding: 14px 18px;
+			min-width: 140px; text-align: center;
+			font-size: 14px; font-weight: 600;
+			border-radius: 10px; border: 1px solid var(--border);
+			background: var(--bg-card); padding: 12px 16px;
+			font-family: 'Outfit', sans-serif;
 		}
+		.node-red  { border-color: var(--border-red);  background: var(--red-s);  color: #ff8d96; }
+		.node-cyan { border-color: var(--border-cyan); background: var(--cyan-s); color: var(--cyan); }
+		.node-green { border-color: rgba(34,197,94,0.40); background: rgba(34,197,94,0.10); color: #4ade80; }
+		.arrow { font-size: 22px; color: var(--text-muted); line-height: 1; }
 
-		.node.primary {
-			border-color: rgba(220, 75, 15, 0.7);
-			background: rgba(220, 75, 15, 0.15);
-		}
-
-		.node.green {
-			border-color: rgba(34, 197, 94, .6);
-			background: rgba(34, 197, 94, .12);
-		}
-
-		.node.blue {
-			border-color: rgba(59, 130, 246, .6);
-			background: rgba(59, 130, 246, .12);
-		}
-
-		.arrow {
-			font-size: 24px;
-			color: var(--accent);
-			line-height: 1;
-		}
-
-		.kpis {
-			display: flex;
-			gap: 52px;
-			flex-wrap: wrap;
-			justify-content: center;
-		}
-
-		.kpi {
-			text-align: center;
-			min-width: 170px;
-		}
-
+		/* ── KPIs ── */
+		.kpis { display: flex; gap: 48px; flex-wrap: wrap; justify-content: center; }
+		.kpi { text-align: center; min-width: 160px; }
 		.kpi .num {
-			font-size: clamp(40px, 5vw, 78px);
-			line-height: 1;
-			letter-spacing: -0.03em;
-			font-weight: 800;
+			font-family: 'Bricolage Grotesque', sans-serif;
+			font-size: clamp(38px, 5vw, 76px);
+			line-height: 1; letter-spacing: -0.03em; font-weight: 800;
 		}
+		.kpi .label { margin-top: 10px; font-size: 16px; color: var(--text-dim); }
 
-		.kpi .label {
-			margin-top: 10px;
-			font-size: 17px;
-			color: var(--text-dim);
-		}
+		/* ── Table ── */
+		.table { width: 100%; border-collapse: collapse; font-size: 15px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+		.table th, .table td { padding: 13px 16px; border-bottom: 1px solid var(--border); text-align: left; }
+		.table th { background: rgba(14,20,36,0.9); font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+		.table tr:last-child td { border-bottom: 0; }
+		.table td.mono { font-size: 12px; color: var(--text-dim); }
+		.text-red   { color: var(--red); }
+		.text-cyan  { color: var(--cyan); }
+		.text-green { color: var(--green); }
+		.text-amber { color: var(--amber); }
+		.text-dim   { color: var(--text-dim); }
+		.text-muted { color: var(--text-muted); }
 
-		.flow-col {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 10px;
-			width: 100%;
-		}
+		/* ── Flow col ── */
+		.flow-col { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
-		.table {
-			width: 100%;
-			border-collapse: collapse;
-			font-size: 16px;
-			overflow: hidden;
-			border-radius: 14px;
-			border: 1px solid var(--border);
-		}
-
-		.table th,
-		.table td {
-			padding: 14px 16px;
-			border-bottom: 1px solid var(--border);
-			text-align: left;
-		}
-
-		.table th {
-			background: #1d150f;
-			font-size: 14px;
-			color: var(--text-dim);
-			text-transform: uppercase;
-			letter-spacing: .06em;
-		}
-
-		.table tr:last-child td {
-			border-bottom: 0;
-		}
-
+		/* ── Nav ── */
 		.nav {
-			position: fixed;
-			left: 50%;
-			transform: translateX(-50%);
-			bottom: 24px;
-			z-index: 50;
-			border: 1px solid var(--border);
-			border-radius: 999px;
-			background: rgba(20, 13, 9, .9);
-			backdrop-filter: blur(10px);
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			padding: 8px 14px;
+			position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px;
+			z-index: 50; border: 1px solid var(--border);
+			border-radius: 999px; background: rgba(7,9,15,0.92); backdrop-filter: blur(12px);
+			display: flex; align-items: center; gap: 7px; padding: 8px 14px;
 		}
-
-		.nav-dot {
-			width: 8px;
-			height: 8px;
-			border-radius: 50%;
-			background: #654739;
-			cursor: pointer;
-			transition: all .25s ease;
-		}
-
-		.nav-dot.active {
-			width: 24px;
-			border-radius: 4px;
-			background: var(--accent);
-			box-shadow: 0 0 14px var(--primary-glow);
-		}
-
-		.counter {
-			margin-left: 8px;
-			color: var(--text-muted);
-			font-size: 12px;
-			letter-spacing: .05em;
-		}
+		.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: #1e293b; cursor: pointer; transition: all .25s ease; }
+		.nav-dot.active { width: 24px; border-radius: 4px; background: var(--red); box-shadow: 0 0 12px var(--red-g); }
+		.counter { margin-left: 8px; color: var(--text-muted); font-size: 11px; letter-spacing: .05em; font-family: 'IBM Plex Mono', monospace; }
 
 		.hint {
-			position: fixed;
-			right: 26px;
-			bottom: 24px;
-			color: var(--text-muted);
-			font-size: 11px;
-			opacity: .7;
-			z-index: 50;
+			position: fixed; right: 24px; bottom: 24px;
+			color: var(--text-muted); font-size: 11px; opacity: .65; z-index: 50;
 		}
+		.hint kbd { border: 1px solid var(--border); border-radius: 4px; background: rgba(14,20,36,0.8); padding: 2px 6px; margin: 0 2px; font-family: 'IBM Plex Mono', monospace; }
 
-		.hint kbd {
-			border: 1px solid var(--border);
-			border-radius: 4px;
-			background: #1b130e;
-			padding: 2px 6px;
-			margin: 0 2px;
-			font-family: 'IBM Plex Mono', monospace;
-		}
-
+		/* ── Animations ── */
 		@keyframes fadeUp {
-			from {
-				opacity: 0;
-				transform: translateY(16px);
-			}
-
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
+			from { opacity: 0; transform: translateY(18px); }
+			to   { opacity: 1; transform: translateY(0); }
 		}
+		.slide.active .anim-1 { animation: fadeUp .55s .08s both; }
+		.slide.active .anim-2 { animation: fadeUp .55s .18s both; }
+		.slide.active .anim-3 { animation: fadeUp .55s .30s both; }
+		.slide.active .anim-4 { animation: fadeUp .55s .44s both; }
+		.slide.active .anim-5 { animation: fadeUp .55s .58s both; }
 
-		.slide.active .anim-1 {
-			animation: fadeUp .55s .1s both;
-		}
-
-		.slide.active .anim-2 {
-			animation: fadeUp .55s .2s both;
-		}
-
-		.slide.active .anim-3 {
-			animation: fadeUp .55s .34s both;
-		}
-
-		.slide.active .anim-4 {
-			animation: fadeUp .55s .48s both;
-		}
-
-		.slide.active .anim-5 {
-			animation: fadeUp .55s .62s both;
-		}
-
+		/* ── Mobile ── */
 		@media (max-width: 980px) {
-			.slide {
-				padding: 34px 24px 70px;
-				overflow-y: auto;
-				justify-content: flex-start;
-			}
-
-			.kpis {
-				gap: 24px;
-			}
-
-			.hint {
-				display: none;
-			}
+			.slide { padding: 32px 20px 72px; overflow-y: auto; justify-content: flex-start; }
+			.kpis  { gap: 20px; }
+			.hint  { display: none; }
 		}
 	</style>
 </head>
 
 <body>
-	<div class="slide active">
-		<div class="bg-grid"></div>
-		<div class="bg-radial"></div>
-		<div class="bg-corner" style="top:-180px; right:-180px; background: var(--primary);"></div>
-		<div class="bg-corner" style="bottom:-220px; left:-100px; background: var(--gold); opacity:.09;"></div>
 
-		<div style="max-width: 1040px; text-align:center; display:flex; flex-direction:column; gap:20px; align-items:center;">
-			<span class="badge anim-1">HyperPaxeer Mainnet • Chain ID 125</span>
-			<h1 class="anim-2">ZibaXeer</h1>
-			<p class="anim-3" style="font-size: clamp(22px, 2.5vw, 34px); color:var(--text-dim); line-height:1.35; max-width:920px;">
-				On-Chain Copy-Trading Vault Protocol for transparent, non-custodial strategy mirroring.
-			</p>
-			<div class="anim-4" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:8px;">
-				<span class="pill"><span class="dot" style="background:var(--green);"></span>Argus Risk Engine</span>
-				<span class="pill"><span class="dot" style="background:var(--blue);"></span>PaxDex Integration</span>
-				<span class="pill"><span class="dot" style="background:var(--gold);"></span>Revenue Splitter</span>
-				<span class="pill"><span class="dot" style="background:var(--primary);"></span>Sidiora Perps</span>
+<!-- ═══════════════════════════════════════
+     SLIDE 1 — TITLE
+═══════════════════════════════════════ -->
+<div class="slide active">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:560px;height:560px;top:-14%;right:-14%;background:radial-gradient(circle,rgba(214,31,44,0.18) 0%,transparent 70%);"></div>
+	<div class="blob" style="width:440px;height:440px;bottom:-12%;left:-10%;background:radial-gradient(circle,rgba(91,192,235,0.13) 0%,transparent 70%);"></div>
+
+	<div style="max-width:1040px;text-align:center;display:flex;flex-direction:column;gap:22px;align-items:center;">
+		<span class="badge anim-1">HyperPaxeer Mainnet · Chain ID 125 · Live April 2026</span>
+		<h1 class="anim-2">ZibaXeer</h1>
+		<p class="anim-3" style="font-size:clamp(20px,2.4vw,32px);color:var(--text-dim);line-height:1.4;max-width:860px;">
+			The capital layer of Web3 copy trading.<br>
+			Non-custodial vaults. Argus-verified leaders. Performance-only fees.
+		</p>
+		<div class="anim-4" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px;">
+			<span class="pill"><span class="dot" style="background:var(--red);"></span>Argus Risk Engine</span>
+			<span class="pill"><span class="dot" style="background:var(--cyan);"></span>Sidiora Perps</span>
+			<span class="pill"><span class="dot" style="background:var(--green);"></span>Non-Custodial Vaults</span>
+			<span class="pill"><span class="dot" style="background:var(--amber);"></span>Revenue Splitter</span>
+		</div>
+		<p class="anim-5 mono" style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+			github.com/thetruesammyjay/ZibaXeer &nbsp;·&nbsp; sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app
+		</p>
+	</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 2 — PROBLEM
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:480px;height:480px;top:-15%;left:-12%;background:radial-gradient(circle,rgba(239,68,68,0.12) 0%,transparent 70%);"></div>
+
+	<div style="max-width:1060px;display:flex;flex-direction:column;gap:28px;text-align:center;align-items:center;">
+		<span class="badge anim-1">The Problem</span>
+		<h2 class="anim-2">Copy-Trading Is Opaque, Custodial, and Misaligned</h2>
+		<div class="kpis anim-3">
+			<div class="kpi"><div class="num text-red">Low</div><div class="label">Execution Transparency</div></div>
+			<div class="kpi"><div class="num" style="color:var(--amber);">High</div><div class="label">Platform Custody Risk</div></div>
+			<div class="kpi"><div class="num text-cyan">Weak</div><div class="label">Incentive Alignment</div></div>
+		</div>
+		<div class="anim-4" style="display:grid;grid-template-columns:repeat(3,minmax(200px,1fr));gap:14px;width:100%;max-width:900px;">
+			<div class="card" style="text-align:left;">
+				<h3 class="text-red" style="font-size:18px;margin-bottom:8px;">Opacity</h3>
+				<p class="text-dim" style="font-size:15px;line-height:1.55;">Most platforms hide trade execution behind black-box systems. Followers can't verify what's happening with their capital.</p>
 			</div>
-			<p class="anim-5 mono" style="font-size:13px; color:var(--text-muted); margin-top:8px;">Hackathon Pitch Deck • March 2026</p>
+			<div class="card" style="text-align:left;">
+				<h3 style="color:var(--amber);font-size:18px;margin-bottom:8px;">Custody Risk</h3>
+				<p class="text-dim" style="font-size:15px;line-height:1.55;">When a platform holds your funds, you're exposed to hacks, insolvencies, and exit scams with no recourse.</p>
+			</div>
+			<div class="card" style="text-align:left;">
+				<h3 class="text-cyan" style="font-size:18px;margin-bottom:8px;">Misaligned Fees</h3>
+				<p class="text-dim" style="font-size:15px;line-height:1.55;">Managers charge recurring fees even when they lose money. Their revenue is decoupled from your returns.</p>
+			</div>
 		</div>
 	</div>
+</div>
 
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-corner" style="top:-180px; left:-140px; background:#ef4444; opacity:.1;"></div>
+<!-- ═══════════════════════════════════════
+     SLIDE 3 — SOLUTION
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:500px;height:500px;bottom:-14%;right:-12%;background:radial-gradient(circle,rgba(91,192,235,0.12) 0%,transparent 70%);"></div>
 
-		<div style="max-width:1050px; display:flex; flex-direction:column; gap:30px; text-align:center; align-items:center;">
-			<span class="badge anim-1">Problem</span>
-			<h2 class="anim-2">Copy-Trading Today Is Opaque, Custodial, and Misaligned</h2>
-			<div class="kpis anim-3">
-				<div class="kpi"><div class="num text-accent">Low</div><div class="label">Execution Transparency</div></div>
-				<div class="kpi"><div class="num text-primary">High</div><div class="label">Platform Custody Risk</div></div>
-				<div class="kpi"><div class="num text-gold">Weak</div><div class="label">Incentive Alignment</div></div>
-			</div>
-			<p class="anim-4" style="font-size:22px; line-height:1.5; color:var(--text-dim); max-width:920px;">
-				Most follower capital is exposed to black-box execution and fee models where leaders can profit without delivering realized returns.
-			</p>
-		</div>
-	</div>
-
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-radial"></div>
-
-		<div style="max-width:1080px; display:flex; flex-direction:column; gap:24px; align-items:center; text-align:center; width:100%;">
-			<span class="badge anim-1">Solution</span>
-			<h2 class="anim-2">ZibaXeer Makes Copy-Trading Verifiable and Non-Custodial</h2>
-			<div class="anim-3 card" style="max-width:900px;">
-				<p style="font-size:20px; line-height:1.6; color:var(--text-dim);">
-					Leaders create vaults, followers subscribe with configurable risk bounds, and all critical state transitions occur on-chain.
-					Fees are performance-based on realized profit, aligning leader and follower outcomes.
-				</p>
-			</div>
-			<div class="anim-4" style="display:grid; grid-template-columns:repeat(3, minmax(190px, 1fr)); gap:14px; width:100%;">
-				<div class="card"><h3 class="text-primary" style="font-size:20px;">Transparent</h3><p class="text-dim" style="margin-top:8px;">On-chain trades and vault lifecycle events.</p></div>
-				<div class="card"><h3 class="text-primary" style="font-size:20px;">Risk-Gated</h3><p class="text-dim" style="margin-top:8px;">Argus scoring + policy constraints.</p></div>
-				<div class="card"><h3 class="text-primary" style="font-size:20px;">Aligned</h3><p class="text-dim" style="margin-top:8px;">Realized-profit revenue splitting.</p></div>
-			</div>
-		</div>
-	</div>
-
-	<div class="slide">
-		<div class="bg-grid"></div>
-
-		<div style="max-width:1060px; display:flex; flex-direction:column; gap:22px; align-items:center; width:100%;">
-			<span class="badge anim-1">Architecture</span>
-			<h2 class="anim-2" style="text-align:center;">Layered System for Scale and Reliability</h2>
-
-			<div class="flow-col anim-3">
-				<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-					<div class="node">Frontend Dashboard</div>
-					<div class="node">Backend API</div>
-				</div>
-				<div class="arrow">↓</div>
-				<div class="node primary" style="min-width:350px;">Protocol Layer: VaultFactory, CopyTradingVault, RiskManager, RevenueSplitter, SidioraVaultAdapter</div>
-				<div class="arrow">↓</div>
-				<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-					<div class="node blue">Indexer (events)</div>
-					<div class="node blue">BullMQ Queues</div>
-					<div class="node blue">Mirror Bot Worker</div>
-				</div>
-				<div class="arrow">↓</div>
-				<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-					<div class="node green" style="min-width:260px;">PostgreSQL Analytics + Leaderboards</div>
-					<div class="node primary" style="min-width:200px;">Sidiora Sequencer (Perps)</div>
-				</div>
-			</div>
-
-			<p class="anim-4 text-dim" style="font-size:18px; text-align:center; max-width:900px;">
-				Consensus-critical actions remain on-chain, while heavy analytics and aggregation scale off-chain via asynchronous pipelines.
+	<div style="max-width:1080px;display:flex;flex-direction:column;gap:22px;align-items:center;text-align:center;width:100%;">
+		<span class="badge anim-1">The Solution</span>
+		<h2 class="anim-2">ZibaXeer Makes Copy-Trading <span class="grad">Verifiable and Non-Custodial</span></h2>
+		<div class="anim-3 card" style="max-width:860px;border-color:var(--border-red);">
+			<p style="font-size:19px;line-height:1.6;color:var(--text-dim);">
+				Leaders create strategy vaults. Followers subscribe with configurable risk bounds. All critical state lives on-chain.
+				Fees only trigger on <strong style="color:white;">realized profit</strong> — aligning leader and follower incentives by design.
 			</p>
 		</div>
-	</div>
-
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-corner" style="bottom:-190px; right:-180px; background:var(--green); opacity:.1;"></div>
-
-		<div style="max-width:1100px; width:100%; display:grid; grid-template-columns: 1fr 1fr; gap:26px; align-items:start;">
-			<div style="display:flex; flex-direction:column; gap:16px;">
-				<span class="badge anim-1">Scalability Decisions</span>
-				<h2 class="anim-2">Why This Scales</h2>
-				<div class="anim-3 card">
-					<h3 style="font-size:22px;">1) Event-Driven Pipeline</h3>
-					<p class="text-dim" style="margin-top:8px;">Vault and trade events are buffered as jobs, absorbing burst traffic without blocking user flows.</p>
+		<div class="anim-4" style="display:grid;grid-template-columns:repeat(3,minmax(190px,1fr));gap:14px;width:100%;">
+			<div class="card" style="text-align:left;">
+				<div style="width:40px;height:40px;border-radius:10px;background:var(--red-s);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D61F2C" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
 				</div>
-				<div class="anim-4 card">
-					<h3 style="font-size:22px;">2) Queue-Based Workers</h3>
-					<p class="text-dim" style="margin-top:8px;">Trade persistence, snapshots, and follower sync are retriable and horizontally scalable.</p>
-				</div>
-				<div class="anim-5 card">
-					<h3 style="font-size:22px;">3) Read/Write Separation</h3>
-					<p class="text-dim" style="margin-top:8px;">Financial truth on-chain. Analytics served from materialized DB views for stable latency.</p>
-				</div>
+				<h3 style="font-size:18px;margin-bottom:8px;">Transparent</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">Every trade, vault event, and settlement recorded on HyperPaxeer. Queryable via PaxScan.</p>
 			</div>
-
-			<div class="anim-4">
-				<table class="table">
-					<thead>
-						<tr>
-							<th>Bottleneck Axis</th>
-							<th>Scaling Lever</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Vault Count Growth</td>
-							<td>Parallel event listeners + queue partitioning</td>
-						</tr>
-						<tr>
-							<td>Follower Growth</td>
-							<td>Worker concurrency + indexed DB writes</td>
-						</tr>
-						<tr>
-							<td>Trade Frequency Bursts</td>
-							<td>Queue backpressure + retry/backoff</td>
-						</tr>
-						<tr>
-							<td>API Read Load</td>
-							<td>Replicated backend nodes + cached aggregates</td>
-						</tr>
-					</tbody>
-				</table>
+			<div class="card" style="text-align:left;">
+				<div style="width:40px;height:40px;border-radius:10px;background:var(--cyan-s);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5BC0EB" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+				</div>
+				<h3 style="font-size:18px;margin-bottom:8px;">Non-Custodial</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">Capital stays in auditable smart contracts. Leaders have trade authority only — never withdrawal access.</p>
+			</div>
+			<div class="card" style="text-align:left;">
+				<div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+				</div>
+				<h3 style="font-size:18px;margin-bottom:8px;">Performance-Only Fees</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">5–25% of realized profits. Zero management fees. Leaders win exactly when followers win.</p>
 			</div>
 		</div>
 	</div>
+</div>
 
-	<div class="slide">
-		<div class="bg-grid"></div>
+<!-- ═══════════════════════════════════════
+     SLIDE 4 — ARCHITECTURE
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
 
-		<div style="max-width:1060px; width:100%; display:flex; flex-direction:column; gap:24px; align-items:center;">
-			<span class="badge anim-1">Protocol Flow</span>
-			<h2 class="anim-2" style="text-align:center;">Leader Trade to Follower Settlement</h2>
+	<div style="max-width:1060px;display:flex;flex-direction:column;gap:20px;align-items:center;width:100%;">
+		<span class="badge anim-1">Architecture</span>
+		<h2 class="anim-2" style="text-align:center;">Layered for Reliability and Scale</h2>
 
-			<div class="anim-3" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px;">
-				<div class="node">Leader executes</div>
-				<div class="arrow">→</div>
-				<div class="node primary">RiskManager validates</div>
-				<div class="arrow">→</div>
-				<div class="node">PaxDex swap</div>
-				<div class="arrow">→</div>
-				<div class="node blue">Event emitted</div>
+		<div class="flow-col anim-3">
+			<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+				<div class="node">Frontend (Next.js 15)</div>
+				<div class="node">Backend API (Express)</div>
 			</div>
-
-			<div class="anim-4" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px;">
-				<div class="node blue">Indexer queues jobs</div>
-				<div class="arrow">→</div>
-				<div class="node blue">Workers persist data</div>
-				<div class="arrow">→</div>
-				<div class="node green">Analytics + PnL update</div>
-				<div class="arrow">→</div>
-				<div class="node green">RevenueSplitter settles</div>
+			<div class="arrow">↓</div>
+			<div class="node-red node" style="min-width:380px;padding:14px 20px;">
+				Protocol Layer: VaultFactory · CopyTradingVault · RiskManager<br>
+				<span style="font-size:12px;opacity:.8;">RevenueSplitter · ArgusOracle · SidioraVaultAdapter</span>
 			</div>
-
-			<p class="anim-5 text-dim" style="font-size:19px; text-align:center; max-width:860px;">
-				This hybrid architecture preserves on-chain integrity while enabling responsive dashboards and monitorable operations.
-			</p>
-		</div>
-	</div>
-
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-corner" style="top:-190px; right:-180px; background:var(--blue); opacity:.1;"></div>
-
-		<div style="max-width:1060px; width:100%; display:flex; flex-direction:column; gap:24px; align-items:center; text-align:center;">
-			<span class="badge anim-1">Hackathon Fit</span>
-			<h2 class="anim-2">Built for Proof of Utility Metrics</h2>
-			<div class="anim-3" style="display:grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap:14px; width:100%;">
-				<div class="card"><h3 class="text-blue" style="font-size:21px;">UAW</h3><p class="text-dim" style="margin-top:8px;">Vault subscriptions and active participation.</p></div>
-				<div class="card"><h3 class="text-blue" style="font-size:21px;">Tx Frequency</h3><p class="text-dim" style="margin-top:8px;">Leader trades + mirrored follower actions.</p></div>
-				<div class="card"><h3 class="text-blue" style="font-size:21px;">On-Chain Volume</h3><p class="text-dim" style="margin-top:8px;">PaxDex routed strategy execution.</p></div>
+			<div class="arrow">↓</div>
+			<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+				<div class="node-cyan node">Indexer (ethers.js v6)</div>
+				<div class="node-cyan node">BullMQ Queues</div>
+				<div class="node-cyan node">Mirror Bot Worker</div>
 			</div>
-			<div class="anim-4 card" style="max-width:900px;">
-				<p style="font-size:19px; color:var(--text-dim); line-height:1.6;">
-					ZibaXeer is engineered to increase organic, repeated network interaction via transparent strategy marketplaces and follower retention loops.
-				</p>
+			<div class="arrow">↓</div>
+			<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+				<div class="node-green node" style="min-width:240px;">PostgreSQL + Redis Analytics</div>
+				<div class="node-red node" style="min-width:200px;">Sidiora Sequencer (Perps)</div>
 			</div>
 		</div>
+
+		<p class="anim-4 text-dim" style="font-size:17px;text-align:center;max-width:860px;">
+			Consensus-critical actions stay on-chain. Analytics, mirroring, and trade aggregation scale off-chain through retriable async pipelines.
+		</p>
 	</div>
+</div>
 
-	<div class="slide">
-		<div class="bg-grid"></div>
+<!-- ═══════════════════════════════════════
+     SLIDE 5 — PROTOCOL MECHANICS
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:420px;height:420px;bottom:-15%;right:-12%;background:radial-gradient(circle,rgba(34,197,94,0.10) 0%,transparent 70%);"></div>
 
-		<div style="max-width:1100px; width:100%; display:flex; flex-direction:column; gap:24px; align-items:center;">
-			<span class="badge anim-1">Readiness</span>
-			<h2 class="anim-2" style="text-align:center;">Deployment and Submission Path</h2>
+	<div style="max-width:1060px;width:100%;display:flex;flex-direction:column;gap:22px;align-items:center;">
+		<span class="badge anim-1">Protocol Flow</span>
+		<h2 class="anim-2" style="text-align:center;">Leader Trade → Follower Settlement</h2>
 
-			<table class="table anim-3" style="max-width:1000px;">
-				<thead>
-					<tr>
-						<th>Workstream</th>
-						<th>Current</th>
-						<th>Next Action</th>
-					</tr>
-				</thead>
+		<div class="anim-3" style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;">
+			<div class="node">Leader executes</div>
+			<div class="arrow">→</div>
+			<div class="node-red node">RiskManager validates</div>
+			<div class="arrow">→</div>
+			<div class="node">PaxDex swap</div>
+			<div class="arrow">→</div>
+			<div class="node-cyan node">Event emitted</div>
+		</div>
+
+		<div class="anim-4" style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;">
+			<div class="node-cyan node">Indexer queues jobs</div>
+			<div class="arrow">→</div>
+			<div class="node-cyan node">BullMQ workers persist</div>
+			<div class="arrow">→</div>
+			<div class="node-green node">Analytics + PnL update</div>
+			<div class="arrow">→</div>
+			<div class="node-green node">RevenueSplitter settles</div>
+		</div>
+
+		<div class="anim-5" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:900px;">
+			<div class="card" style="text-align:left;">
+				<h3 style="font-size:17px;color:var(--red);margin-bottom:6px;">Revenue Split</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">70–90% to followers · 5–25% to leader · 2–5% protocol fee</p>
+			</div>
+			<div class="card" style="text-align:left;">
+				<h3 style="font-size:17px;color:var(--cyan);margin-bottom:6px;">Argus Risk Engine</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">500+ on-chain signals score every vault leader in real time</p>
+			</div>
+			<div class="card" style="text-align:left;">
+				<h3 style="font-size:17px;color:var(--green);margin-bottom:6px;">Idempotent Mirroring</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">traceId deduplication + PostgreSQL audit trail for every mirror decision</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 6 — TECH STACK
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+
+	<div style="max-width:1100px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;">
+		<div style="display:flex;flex-direction:column;gap:16px;">
+			<span class="badge anim-1">Tech Stack</span>
+			<h2 class="anim-2">Production-Grade<br><span class="grad">From Contracts to UI</span></h2>
+			<div class="anim-3 card">
+				<h3 style="font-size:17px;margin-bottom:8px;">Smart Contracts</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">Solidity ^0.8.20 · Foundry · OpenZeppelin UUPS · 8 Foundry tests all passing</p>
+			</div>
+			<div class="anim-4 card">
+				<h3 style="font-size:17px;margin-bottom:8px;">Backend + Indexer</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">Node.js 20 · Express · ethers.js v6 · PostgreSQL 16 · Redis · BullMQ</p>
+			</div>
+			<div class="anim-5 card">
+				<h3 style="font-size:17px;margin-bottom:8px;">Frontend</h3>
+				<p class="text-dim" style="font-size:14px;line-height:1.5;">Next.js 15 · React 19 · Tailwind CSS v4 · Wagmi v2 · ConnectKit</p>
+			</div>
+		</div>
+
+		<div class="anim-4">
+			<table class="table">
+				<thead><tr><th>Layer</th><th>Deployed</th><th>Platform</th></tr></thead>
 				<tbody>
-					<tr>
-						<td>Smart Contracts</td>
-						<td class="text-green">✅ Live on Mainnet</td>
-						<td>Verify on PaxScan explorer</td>
-					</tr>
-					<tr>
-						<td>Sidiora Perps Layer</td>
-						<td class="text-green">✅ Adapter + Mirror Bot built</td>
-						<td>Connect to Sidiora sequencer API</td>
-					</tr>
-					<tr>
-						<td>Frontend + Backend</td>
-						<td class="text-gold">⏳ Built, pending Railway access</td>
-						<td>Deploy via Railway (invite from Paxeer)</td>
-					</tr>
-					<tr>
-						<td>Indexer + Workers</td>
-						<td class="text-green">✅ Pipeline + Sidiora queue built</td>
-						<td>Wire to production BullMQ + PostgreSQL</td>
-					</tr>
-					<tr>
-						<td>Documentation</td>
-						<td class="text-green">✅ Docs + README complete</td>
-						<td>Link docs in submission summary</td>
-					</tr>
+					<tr><td>Smart Contracts</td><td class="text-green">✅ Live</td><td class="text-dim mono" style="font-size:12px;">HyperPaxeer</td></tr>
+					<tr><td>Backend API</td><td class="text-green">✅ Live</td><td class="text-dim mono" style="font-size:12px;">Railway</td></tr>
+					<tr><td>Indexer</td><td class="text-green">✅ Live</td><td class="text-dim mono" style="font-size:12px;">Railway</td></tr>
+					<tr><td>Mirror Bot EOA</td><td class="text-green">✅ Funded</td><td class="text-dim mono" style="font-size:12px;">76k+ PAX</td></tr>
+					<tr><td>Frontend</td><td class="text-amber">⏳ Built</td><td class="text-dim mono" style="font-size:12px;">Pending deploy</td></tr>
+					<tr><td>PaxScan Verify</td><td class="text-amber">⏳ Ready</td><td class="text-dim mono" style="font-size:12px;">Awaiting API key</td></tr>
 				</tbody>
 			</table>
 		</div>
 	</div>
+</div>
 
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-corner" style="bottom:-190px; right:-180px; background:var(--primary); opacity:.15;"></div>
+<!-- ═══════════════════════════════════════
+     SLIDE 7 — HYPERPAXEER NETWORK
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:440px;height:440px;top:-14%;right:-12%;background:radial-gradient(circle,rgba(91,192,235,0.13) 0%,transparent 70%);"></div>
 
-		<div style="max-width:1100px; width:100%; display:flex; flex-direction:column; gap:20px; align-items:center;">
-			<span class="badge anim-1">🟢 Live on HyperPaxeer Mainnet</span>
-			<h2 class="anim-2" style="text-align:center;">Deployed Contract Addresses</h2>
-
-			<table class="table anim-3" style="max-width:1050px; font-size:14px;">
-				<thead>
-					<tr>
-						<th>Contract</th>
-						<th>Address (Chain ID 125)</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr><td>ZibaXeerToken</td><td class="mono text-dim" style="font-size:13px;">0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1</td></tr>
-					<tr><td>ArgusOracle Proxy</td><td class="mono text-dim" style="font-size:13px;">0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1</td></tr>
-					<tr><td>PaxDexAdapter Proxy</td><td class="mono text-dim" style="font-size:13px;">0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd</td></tr>
-					<tr><td>RiskManager Proxy</td><td class="mono text-dim" style="font-size:13px;">0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d</td></tr>
-					<tr><td>RevenueSplitter Proxy</td><td class="mono text-dim" style="font-size:13px;">0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5</td></tr>
-					<tr><td>VaultRegistry Proxy</td><td class="mono text-dim" style="font-size:13px;">0x7BE93B4D42a63cc0005362390ECFB567139c6250</td></tr>
-					<tr><td>CopyTradingVault Impl</td><td class="mono text-dim" style="font-size:13px;">0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA</td></tr>
-					<tr><td style="font-weight:700; color:var(--accent);">VaultFactory Proxy ⭐</td><td class="mono" style="font-size:13px; color:var(--accent);">0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6</td></tr>
-				</tbody>
-			</table>
-			<p class="anim-4 mono" style="font-size:12px; color:var(--text-muted);">Explorer: paxscan.paxeer.app &nbsp;•&nbsp; EVM London-compatible &nbsp;•&nbsp; Gas used: ~8.7M</p>
-		</div>
-	</div>
-
-	<div class="slide">
-		<div class="bg-grid"></div>
-		<div class="bg-radial"></div>
-		<div class="bg-corner" style="top:-170px; right:-180px; background:var(--primary);"></div>
-		<div class="bg-corner" style="bottom:-200px; left:-130px; background:var(--gold); opacity:.1;"></div>
-
-		<div style="max-width:980px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:20px;">
-			<h1 class="anim-1">ZibaXeer</h1>
-			<p class="anim-2" style="font-size:30px; line-height:1.35; color:var(--text-dim);">
-				The capital layer for transparent copy-trading on HyperPaxeer.
+	<div style="max-width:1060px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;">
+		<div style="display:flex;flex-direction:column;gap:18px;">
+			<span class="badge badge-cyan anim-1">Why HyperPaxeer</span>
+			<h2 class="anim-2">Built for the<br><span class="grad">Colosseum Ecosystem</span></h2>
+			<p class="anim-3 text-dim" style="font-size:16px;line-height:1.6;">
+				HyperPaxeer's funded wallet model (starting at $50,000 USDL per Colosseum trader) solves the cold-start liquidity problem that plagues most copy-trading protocols.
+				ZibaXeer plugs directly into this captive supply of funded, active traders.
 			</p>
-			<div class="anim-3" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
-				<span class="pill">GitHub: github.com/thetruesammyjay/ZibaXeer</span>
-				<span class="pill">Docs: sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app</span>
+			<div class="anim-4" style="display:flex;flex-direction:column;gap:2px;">
+				<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="text-dim">Consensus</span><span class="mono" style="font-size:12px;">CometBFT (instant finality)</span></div>
+				<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="text-dim">Block Time</span><span class="mono" style="font-size:12px;">~2 seconds</span></div>
+				<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="text-dim">EVM Chain ID</span><span class="mono" style="font-size:12px;">125</span></div>
+				<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="text-dim">Native Token</span><span class="mono" style="font-size:12px;">PAX (ahpx)</span></div>
+				<div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;"><span class="text-dim">Interop</span><span class="mono" style="font-size:12px;">IBC-ready</span></div>
 			</div>
-			<p class="anim-4 mono" style="font-size:13px; color:var(--text-muted); margin-top:10px;">
-				Thank you • Use arrow keys to replay
+		</div>
+
+		<div class="anim-4 card card-cyan" style="border-color:var(--border-cyan);display:flex;flex-direction:column;gap:14px;">
+			<h3 style="font-size:17px;color:var(--cyan);">ZibaXeer × Colosseum Flywheel</h3>
+			<div style="display:flex;flex-direction:column;gap:10px;">
+				<div class="card" style="padding:14px;background:rgba(91,192,235,0.06);">
+					<p style="font-size:14px;font-weight:600;color:var(--cyan);margin-bottom:4px;">1. Leader creates vault</p>
+					<p class="text-dim" style="font-size:13px;">Argus-verified Colosseum gladiator deploys a copy-trading strategy with risk parameters.</p>
+				</div>
+				<div class="card" style="padding:14px;background:rgba(214,31,44,0.06);">
+					<p style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:4px;">2. Follower subscribes</p>
+					<p class="text-dim" style="font-size:13px;">Funded wallet allocates ERC-20 capital. One-click approve → subscribe on-chain.</p>
+				</div>
+				<div class="card" style="padding:14px;background:rgba(34,197,94,0.06);">
+					<p style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:4px;">3. Profits mirror automatically</p>
+					<p class="text-dim" style="font-size:13px;">Sidiora trades propagate through mirror bot. Revenue splits on realized PnL only.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 8 — DEPLOYED CONTRACTS
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:400px;height:400px;bottom:-14%;right:-12%;background:radial-gradient(circle,rgba(214,31,44,0.13) 0%,transparent 70%);"></div>
+
+	<div style="max-width:1100px;width:100%;display:flex;flex-direction:column;gap:18px;align-items:center;">
+		<span class="badge badge-green anim-1">✅ Live on HyperPaxeer Mainnet</span>
+		<h2 class="anim-2" style="text-align:center;">Deployed Contract Addresses</h2>
+
+		<table class="table anim-3" style="max-width:1050px;font-size:13px;">
+			<thead><tr><th>Contract</th><th>Address (Chain ID 125)</th><th>Type</th></tr></thead>
+			<tbody>
+				<tr><td>ZibaXeerToken</td><td class="mono">0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1</td><td class="text-dim">ERC-20</td></tr>
+				<tr><td>ArgusOracle</td><td class="mono">0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1</td><td class="text-dim">UUPS Proxy</td></tr>
+				<tr><td>PaxDexAdapter</td><td class="mono">0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd</td><td class="text-dim">UUPS Proxy</td></tr>
+				<tr><td>RiskManager</td><td class="mono">0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d</td><td class="text-dim">UUPS Proxy</td></tr>
+				<tr><td>RevenueSplitter</td><td class="mono">0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5</td><td class="text-dim">UUPS Proxy</td></tr>
+				<tr><td>VaultRegistry</td><td class="mono">0x7BE93B4D42a63cc0005362390ECFB567139c6250</td><td class="text-dim">UUPS Proxy</td></tr>
+				<tr><td>CopyTradingVault Impl</td><td class="mono">0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA</td><td class="text-dim">Implementation</td></tr>
+				<tr>
+					<td style="font-weight:700;color:#ff8d96;">VaultFactory ⭐</td>
+					<td class="mono" style="color:var(--red);">
+						<a href="https://paxscan.paxeer.app/address/0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6" target="_blank" style="color:var(--red);text-decoration:none;">
+							0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6
+						</a>
+					</td>
+					<td style="color:#ff8d96;">UUPS Proxy</td>
+				</tr>
+			</tbody>
+		</table>
+		<p class="anim-4 mono" style="font-size:11px;color:var(--text-muted);">
+			Explorer: paxscan.paxeer.app &nbsp;·&nbsp; Mirror Bot funded: 76,000+ PAX gas &nbsp;·&nbsp; EVM London-compatible
+		</p>
+	</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 9 — ROADMAP
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+
+	<div style="max-width:1060px;width:100%;display:flex;flex-direction:column;gap:20px;align-items:center;">
+		<span class="badge anim-1">Roadmap</span>
+		<h2 class="anim-2" style="text-align:center;">Four Phases to Full Protocol</h2>
+
+		<div class="anim-3" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;">
+			<div class="card" style="text-align:left;border-color:var(--border-red);">
+				<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:10px;">Phase 1 · Done</div>
+				<ul style="list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text-dim);">
+					<li>✅ Core contracts deployed</li>
+					<li>✅ Argus Oracle bridge</li>
+					<li>✅ Indexer + BullMQ live</li>
+					<li>✅ Backend API on Railway</li>
+					<li>✅ Mirror bot prefunded</li>
+				</ul>
+			</div>
+			<div class="card" style="text-align:left;border-color:rgba(245,158,11,0.35);">
+				<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;">Phase 2 · Active</div>
+				<ul style="list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text-dim);">
+					<li>⏳ Sidiora sequencer wire</li>
+					<li>⏳ Mirror bot authorization</li>
+					<li>⏳ PaxScan verification</li>
+					<li>⏳ Frontend production deploy</li>
+					<li>⏳ Colosseum leader onboard</li>
+				</ul>
+			</div>
+			<div class="card" style="text-align:left;border-color:var(--border-cyan);">
+				<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;">Phase 3 · Growth</div>
+				<ul style="list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text-dim);">
+					<li>Multi-strategy vaults</li>
+					<li>IBC cross-chain mirroring</li>
+					<li>React Native mobile app</li>
+					<li>Governance token launch</li>
+					<li>Advanced analytics engine</li>
+				</ul>
+			</div>
+			<div class="card" style="text-align:left;border-color:rgba(168,85,247,0.35);">
+				<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;">Phase 4 · Scale</div>
+				<ul style="list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text-dim);">
+					<li>Institutional vault tiers</li>
+					<li>DAO governance v2</li>
+					<li>SDK & API public release</li>
+					<li>Advanced risk analytics</li>
+					<li>Cross-protocol strategies</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="anim-4 card" style="max-width:860px;border-color:var(--border-red);background:var(--red-s);">
+			<p style="font-size:16px;color:var(--text-dim);line-height:1.6;text-align:center;">
+				Pending from Paxeer team: <strong style="color:white;">mirror bot authorization</strong> on Sidiora Diamond,
+				first <strong style="color:white;">leader EOA</strong> for live mirroring, and
+				<strong style="color:white;">frontend deployment</strong> access. Everything else is production-ready.
 			</p>
 		</div>
 	</div>
+</div>
 
-	<div class="nav" id="nav"></div>
-	<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navigate &nbsp;·&nbsp; <kbd>F</kbd> fullscreen</div>
+<!-- ═══════════════════════════════════════
+     SLIDE 10 — CLOSE
+═══════════════════════════════════════ -->
+<div class="slide">
+	<div class="bg-grid"></div>
+	<div class="blob" style="width:560px;height:560px;top:-14%;right:-14%;background:radial-gradient(circle,rgba(214,31,44,0.18) 0%,transparent 70%);"></div>
+	<div class="blob" style="width:440px;height:440px;bottom:-12%;left:-10%;background:radial-gradient(circle,rgba(91,192,235,0.13) 0%,transparent 70%);"></div>
 
-	<script>
-		function toggleFS() {
-			const btn = document.getElementById('fsBtn');
-			if (!document.fullscreenElement) {
-				document.documentElement.requestFullscreen();
-				btn.textContent = '✕ Exit Fullscreen';
-			} else {
-				document.exitFullscreen();
-				btn.textContent = '⛶ Fullscreen';
-			}
+	<div style="max-width:980px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:22px;">
+		<h1 class="anim-1">ZibaXeer</h1>
+		<p class="anim-2" style="font-size:clamp(20px,2.4vw,30px);line-height:1.4;color:var(--text-dim);">
+			The capital layer for transparent copy-trading on HyperPaxeer.
+		</p>
+		<div class="anim-3" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
+			<a href="https://github.com/thetruesammyjay/ZibaXeer" target="_blank" class="pill" style="text-decoration:none;color:var(--text);">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+				github.com/thetruesammyjay/ZibaXeer
+			</a>
+			<a href="https://paxscan.paxeer.app/address/0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6" target="_blank" class="pill" style="text-decoration:none;color:var(--text);">
+				<span class="dot" style="background:var(--green);"></span>
+				VaultFactory on PaxScan
+			</a>
+			<a href="https://sammyjaysoftwaresolutionsandconsultancyltd.mintlify.app" target="_blank" class="pill" style="text-decoration:none;color:var(--text);">
+				Docs
+			</a>
+		</div>
+		<p class="anim-4 mono" style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+			Use ← → or swipe to navigate · Press F for fullscreen
+		</p>
+	</div>
+</div>
+
+<div class="nav" id="nav"></div>
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navigate &nbsp;·&nbsp; <kbd>F</kbd> fullscreen</div>
+
+<script>
+	function toggleFS() {
+		if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+		else document.exitFullscreen();
+	}
+
+	(function () {
+		const slides = document.querySelectorAll('.slide');
+		const nav    = document.getElementById('nav');
+		let current  = 0;
+		const total  = slides.length;
+
+		for (let i = 0; i < total; i++) {
+			const dot = document.createElement('div');
+			dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+			dot.dataset.index = i;
+			dot.onclick = () => goTo(i);
+			nav.appendChild(dot);
 		}
-		document.addEventListener('fullscreenchange', () => {
-			const btn = document.getElementById('fsBtn');
-			if (!document.fullscreenElement) btn.textContent = '⛶ Fullscreen';
+
+		const counter = document.createElement('span');
+		counter.className = 'counter mono';
+		counter.textContent = `1 / ${total}`;
+		nav.appendChild(counter);
+
+		function replayAnimations(index) {
+			slides[index].querySelectorAll('[class*="anim-"]').forEach((el) => {
+				el.style.animation = 'none';
+				el.offsetHeight;
+				el.style.animation = '';
+			});
+		}
+
+		function goTo(n) {
+			if (n < 0 || n >= total || n === current) return;
+			const prev = current;
+			slides[prev].classList.remove('active');
+			slides[prev].classList.add('exit-left');
+			current = n;
+			replayAnimations(current);
+			slides[current].classList.add('active');
+			nav.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+			counter.textContent = `${current + 1} / ${total}`;
+			setTimeout(() => slides[prev].classList.remove('exit-left'), 450);
+		}
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+			if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); goTo(current - 1); }
+			if (e.key === 'Home')  { e.preventDefault(); goTo(0); }
+			if (e.key === 'End')   { e.preventDefault(); goTo(total - 1); }
+			if (e.key === 'f' || e.key === 'F') toggleFS();
 		});
 
-		(function () {
-			const slides = document.querySelectorAll('.slide');
-			const nav = document.getElementById('nav');
-			let current = 0;
-			const total = slides.length;
-
-			for (let i = 0; i < total; i++) {
-				const dot = document.createElement('div');
-				dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
-				dot.dataset.index = i;
-				dot.onclick = () => goTo(i);
-				nav.appendChild(dot);
-			}
-
-			const counter = document.createElement('span');
-			counter.className = 'counter mono';
-			counter.textContent = `1 / ${total}`;
-			nav.appendChild(counter);
-
-			function replayAnimations(index) {
-				slides[index].querySelectorAll('[class*="anim-"]').forEach((el) => {
-					el.style.animation = 'none';
-					el.offsetHeight;
-					el.style.animation = '';
-				});
-			}
-
-			function goTo(n) {
-				if (n < 0 || n >= total || n === current) return;
-				const prev = current;
-				slides[prev].classList.remove('active');
-				slides[prev].classList.add('exit-left');
-				current = n;
-				replayAnimations(current);
-				slides[current].classList.add('active');
-				nav.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
-				counter.textContent = `${current + 1} / ${total}`;
-				setTimeout(() => slides[prev].classList.remove('exit-left'), 460);
-			}
-
-			document.addEventListener('keydown', (e) => {
-				if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-					e.preventDefault();
-					goTo(current + 1);
-				}
-				if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-					e.preventDefault();
-					goTo(current - 1);
-				}
-				if (e.key === 'Home') {
-					e.preventDefault();
-					goTo(0);
-				}
-				if (e.key === 'End') {
-					e.preventDefault();
-					goTo(total - 1);
-				}
-				if (e.key === 'f' || e.key === 'F') {
-					toggleFS();
-				}
-			});
-
-			let touchStartX = 0;
-			document.addEventListener('touchstart', (e) => {
-				touchStartX = e.changedTouches[0].screenX;
-			});
-			document.addEventListener('touchend', (e) => {
-				const diff = touchStartX - e.changedTouches[0].screenX;
-				if (Math.abs(diff) > 50) {
-					if (diff > 0) goTo(current + 1);
-					else goTo(current - 1);
-				}
-			});
-		})();
-	</script>
+		let touchStartX = 0;
+		document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+		document.addEventListener('touchend',   (e) => {
+			const diff = touchStartX - e.changedTouches[0].screenX;
+			if (Math.abs(diff) > 50) { if (diff > 0) goTo(current + 1); else goTo(current - 1); }
+		});
+	})();
+</script>
 </body>
-
 </html>

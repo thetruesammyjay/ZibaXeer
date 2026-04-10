@@ -42,11 +42,11 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 
 ### Web
 
-![ZibaXeer Web Snapshot](./Zibaxeer-Web.jpeg)
+![ZibaXeer Web Snapshot](./web-image.jpeg)
 
 ### Mobile
 
-![ZibaXeer Mobile Snapshot](./ZibaXeer-mobile.jpeg)
+![ZibaXeer Mobile Snapshot](./image.png)
 
 ---
 
