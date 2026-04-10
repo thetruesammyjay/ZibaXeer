@@ -33,6 +33,11 @@ export const metadata: Metadata = {
   description:
     "Mirror top Colosseum traders on HyperPaxeer — transparently, non-custodially, on-chain. Performance-only fees. Full custody of your capital.",
   keywords: ["copy trading", "DeFi", "HyperPaxeer", "ZibaXeer", "Colosseum", "vaults", "on-chain"],
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   openGraph: {
     title: "ZibaXeer — Web3 Copy Trading",
     description: "Mirror top Colosseum traders on HyperPaxeer. Non-custodial vaults, performance-only fees.",
