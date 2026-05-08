@@ -56,16 +56,18 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 
 ### Deployed Contracts
 
-| Contract | Address |
-|---|---|
-| ZibaXeerToken | [`0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1`](https://paxscan.paxeer.app/address/0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1) |
-| ArgusOracle Proxy | [`0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1`](https://paxscan.paxeer.app/address/0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1) |
-| PaxDexAdapter Proxy | [`0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd`](https://paxscan.paxeer.app/address/0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd) |
-| RiskManager Proxy | [`0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d`](https://paxscan.paxeer.app/address/0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d) |
-| RevenueSplitter Proxy | [`0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5`](https://paxscan.paxeer.app/address/0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5) |
-| VaultRegistry Proxy | [`0x7BE93B4D42a63cc0005362390ECFB567139c6250`](https://paxscan.paxeer.app/address/0x7BE93B4D42a63cc0005362390ECFB567139c6250) |
-| CopyTradingVault Impl | [`0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA`](https://paxscan.paxeer.app/address/0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA) |
-| **VaultFactory Proxy** | [**`0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6`**](https://paxscan.paxeer.app/address/0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6) |
+| Contract | Proxy / Token Address | Implementation Address |
+|---|---|---|
+| ZibaXeerToken ✅ | [`0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1`](https://paxscan.paxeer.app/address/0xD3A558E2627B5b0f6E7ba76cf92052f3743F3Df1) | — (token, no proxy) |
+| ArgusOracle ✅ | [`0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1`](https://paxscan.paxeer.app/address/0xc990Ae725E0C0e3Fc80A947558Ff9605A483DFF1) | [`0x5334c1ef1ec83fe76c3aee531c59a29b61e8fdaa`](https://paxscan.paxeer.app/address/0x5334c1ef1ec83fe76c3aee531c59a29b61e8fdaa) |
+| PaxDexAdapter ✅ | [`0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd`](https://paxscan.paxeer.app/address/0x6f7e1D9d047c59b02709Db7eCBFd4Ceda2DB49fd) | [`0xfd74f35ca7194da31a9e378de6b8400f5a218f84`](https://paxscan.paxeer.app/address/0xfd74f35ca7194da31a9e378de6b8400f5a218f84) |
+| RiskManager ✅ | [`0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d`](https://paxscan.paxeer.app/address/0xb451F66fcF41BFF655f082a7F5402AD0DFe0645d) | [`0x9c9823e9f5aece56343f5423055bd7cf83dbe49f`](https://paxscan.paxeer.app/address/0x9c9823e9f5aece56343f5423055bd7cf83dbe49f) |
+| RevenueSplitter ✅ | [`0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5`](https://paxscan.paxeer.app/address/0xb3811eADB9Da7FB1324d845BCF0858e0DD9aa3A5) | [`0x578cf920c59a454c1945ab260a5ee3958e49aeed`](https://paxscan.paxeer.app/address/0x578cf920c59a454c1945ab260a5ee3958e49aeed) |
+| VaultRegistry ✅ | [`0x7BE93B4D42a63cc0005362390ECFB567139c6250`](https://paxscan.paxeer.app/address/0x7BE93B4D42a63cc0005362390ECFB567139c6250) | [`0x440e5718f2c915dd71372d5a4b71d51a20dc77f8`](https://paxscan.paxeer.app/address/0x440e5718f2c915dd71372d5a4b71d51a20dc77f8) |
+| CopyTradingVault ✅ | [`0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA`](https://paxscan.paxeer.app/address/0xC40A5CCE1229f1C947e5447AbD2cB8DE606973cA) | (is the implementation) |
+| **VaultFactory ✅** | [**`0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6`**](https://paxscan.paxeer.app/address/0x7553a9DEbb00cC6F6023675e2ac66110f8a57fE6) | [`0x8c0603969eddf63fa8bf1b147873005e32a4486e`](https://paxscan.paxeer.app/address/0x8c0603969eddf63fa8bf1b147873005e32a4486e) |
+
+> ✅ All 8 implementation contracts verified on PaxScan (Blockscout). Source code, ABI, and read/write interfaces are publicly visible.
 
 ### What is live:
 
@@ -89,7 +91,6 @@ Covers Getting Started, system architecture, backend API, smart contracts, and t
 - `SidioraVaultAdapter.authorizeMirrorBot(0xDC4988e240ffc9d51E1e3aB853577102d6d20Fd6)` — authorizes our mirror bot on the Sidiora Diamond.
 - First leader EOA address for `KNOWN_LEADER_ADDRESSES` — activates the Sidiora live listener in the indexer.
 - Frontend deployment to Vercel/Railway with production domain.
-- PaxScan contract verification.
 
 ---
 
@@ -648,11 +649,19 @@ forge script script/DeployFresh.s.sol \
   --broadcast --slow --skip-simulation
 ```
 
-# Verify on PaxScan
+# Verify on PaxScan (no API key needed — Blockscout is open)
 ```bash
-forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
+# Verify all 8 implementation contracts in one shot:
+bash verify-all.sh
+
+# Or verify a single contract manually:
+forge verify-contract <IMPL_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
+    --verifier blockscout \
+    --verifier-url https://paxscan.paxeer.app/api/ \
     --chain 125 \
-  --etherscan-api-key $PAXSCAN_API_KEY
+    --compiler-version 0.8.33 \
+    --evm-version london \
+    --via-ir
 ```
 
 ### Deploy Frontend
