@@ -34,10 +34,17 @@ forge script script/Deploy.s.sol \
 ### Verify on PaxScan
 
 ```bash
-forge verify-contract <CONTRACT_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
-  --chain-id 125 \
-  --etherscan-api-key $PAXSCAN_API_KEY \
-  --rpc-url https://public-mainnet.rpcpaxeer.online/evm
+# Verify all 8 implementation contracts in one shot:
+bash verify-all.sh
+
+# Or verify a single contract manually:
+forge verify-contract <IMPL_ADDRESS> src/core/VaultFactory.sol:VaultFactory \
+  --verifier blockscout \
+  --verifier-url https://paxscan.paxeer.app/api/ \
+  --chain 125 \
+  --compiler-version 0.8.33 \
+  --evm-version london \
+  --via-ir
 ```
 
 ### Deployment Order
