@@ -18,7 +18,7 @@ set -e
 
 VERIFIER_URL="https://paxscan.paxeer.app/api/"
 CHAIN=125
-COMPILER="0.8.21"
+COMPILER="0.8.33"
 
 echo ""
 echo "╔══════════════════════════════════════════════════════╗"
@@ -78,42 +78,42 @@ verify_proxy() {
 # ─── Implementations ──────────────────────────────────────────────────────────
 
 verify_impl \
-    "0x0386aad01a0bd92543021b631168a721270d96c1" \
+    "0xd3a558e2627b5b0f6e7ba76cf92052f3743f3df1" \
     "src/core/ZibaXeerToken.sol:ZibaXeerToken" \
     "ZibaXeerToken"
 
 verify_impl \
-    "0x4b5ed7524c554becdf01d7beed9ccfba751c38b0" \
+    "0x5334c1ef1ec83fe76c3aee531c59a29b61e8fdaa" \
     "src/oracle/ArgusOracle.sol:ArgusOracle" \
     "ArgusOracle"
 
 verify_impl \
-    "0x3888dcaeddd74bf7e0cfbd73a5588707dde296dc" \
+    "0xfd74f35ca7194da31a9e378de6b8400f5a218f84" \
     "src/adapters/PaxDexAdapter.sol:PaxDexAdapter" \
     "PaxDexAdapter"
 
 verify_impl \
-    "0x72967250469db170ebd71f9330af8d2bd234b794" \
+    "0x9c9823e9f5aece56343f5423055bd7cf83dbe49f" \
     "src/gov/RiskManager.sol:RiskManager" \
     "RiskManager"
 
 verify_impl \
-    "0x5334c1ef1ec83fe76c3aee531c59a29b61e8fdaa" \
+    "0x578cf920c59a454c1945ab260a5ee3958e49aeed" \
     "src/gov/RevenueSplitter.sol:RevenueSplitter" \
     "RevenueSplitter"
 
 verify_impl \
-    "0xfd74f35ca7194da31a9e378de6b8400f5a218f84" \
+    "0x440e5718f2c915dd71372d5a4b71d51a20dc77f8" \
     "src/core/VaultRegistry.sol:VaultRegistry" \
     "VaultRegistry"
 
 verify_impl \
-    "0x9c9823e9f5aece56343f5423055bd7cf83dbe49f" \
+    "0xc40a5cce1229f1c947e5447abd2cb8de606973ca" \
     "src/core/CopyTradingVault.sol:CopyTradingVault" \
     "CopyTradingVault"
 
 verify_impl \
-    "0xb451f66fcf41bff655f082a7f5402ad0dfe0645d" \
+    "0x8c0603969eddf63fa8bf1b147873005e32a4486e" \
     "src/core/VaultFactory.sol:VaultFactory" \
     "VaultFactory"
 
